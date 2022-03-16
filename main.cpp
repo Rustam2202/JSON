@@ -16,12 +16,13 @@ json::Document LoadJSON(const std::string& s) {
 }
 
 // Раскомментируйте эти функции по мере того, как реализуете недостающий функционал
-/*
+
 std::string Print(const Node& node) {
     std::ostringstream out;
     Print(Document{node}, out);
     return out.str();
 }
+
 
 void MustFailToLoad(const std::string& s) {
     try {
@@ -55,7 +56,6 @@ void MustThrowLogicError(Fn fn) {
         assert(false);
     }
 }
-*/
 
 void TestNull() {
     Node null_node;
@@ -71,7 +71,6 @@ void TestNull() {
     assert(node == null_node);
 }
 
-/*
 void TestNumbers() {
     Node int_node{42};
     assert(int_node.IsInt());
@@ -152,6 +151,7 @@ void TestMap() {
     assert(LoadJSON(Print(dict_node)).GetRoot() == dict_node);
 }
 
+
 void TestErrorHandling() {
     MustFailToLoad("["s);
     MustFailToLoad("]"s);
@@ -214,14 +214,14 @@ void Benchmark() {
 }  // namespace
 
 int main() {
-    /*
+  
     TestNull();
     TestNumbers();
     TestStrings();
     TestBool();
     TestArray();
     TestMap();
-    TestErrorHandling();
+   TestErrorHandling();
     Benchmark();
-    */
+    
 }
