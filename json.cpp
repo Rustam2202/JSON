@@ -247,55 +247,51 @@ namespace json {
 		return Document{ LoadNode(input) };
 	}
 
-	struct TypeDocument {
+	struct VisitTypeDocument {
 		ostream& out;
-		void operator()(monostate) const { out << "null"; }
+		void operator()(nullptr_t) const { out << "null"; }
 		void operator()(double root) const { out << root; }
 		void operator()(bool root) const { out << root; }
 		void operator()(int root) const { out << root; }
 		void operator()(Dict root) const {  }
 		void operator()(Array root) const {  }
 		void operator()(std::string root) const { out << root; }
-
 	};
 
 	void Print(const Document& doc, std::ostream& output) {
-		// Реализуйте функцию самостоятельно
-		//(void)&doc;
-		//(void)&output;
-
-		const JSON_document solution = doc.GetRoot();
+		
 		std::ostringstream strm;
-		std::visit(TypeDocument{ strm }, solution);
+		std::visit(VisitTypeDocument{ strm }, doc.GetRoot().GetJsonDocument());
+		output << strm.str();
 
-
-		auto type = doc.GetRoot();
-		if (type.IsArray()) {
-			for (auto doc : type.AsArray()) {
-				output << doc.AsDouble(); // ?
-			}
-		}
-		else if (type.IsBool()) {
-			output << type.AsBool();
-		}
-		else if (type.IsDouble()) {
-			output << type.AsDouble();
-		}
-		else if (type.IsInt()) {
-			output << type.AsInt();
-		}
-		else if (type.IsMap()) {
-
-		}
-		else if(type.IsNull())	{
-			output << "null"s;
-		}
-		else if(type.IsPureDouble()){
-			output << type.AsDouble();
-		}
-		else if (type.IsString()) {
-			output << type.AsString();
-		}
+		//{
+		//	auto type = doc.GetRoot();
+		//	if (type.IsArray()) {
+		//		for (auto doc : type.AsArray()) {
+		//			output << doc.AsDouble(); // ?
+		//		}
+		//	}
+		//	else if (type.IsBool()) {
+		//		output << type.AsBool();
+		//	}
+		//	else if (type.IsDouble()) {
+		//		output << type.AsDouble();
+		//	}
+		//	else if (type.IsInt()) {
+		//		output << type.AsInt();
+		//	}
+		//	else if (type.IsMap()) {
+		//	}
+		//	else if (type.IsNull()) {
+		//		output << "null"s;
+		//	}
+		//	else if (type.IsPureDouble()) {
+		//		output << type.AsDouble();
+		//	}
+		//	else if (type.IsString()) {
+		//		output << type.AsString();
+		//	}
+		//}
 	}
 
 }  // namespace json

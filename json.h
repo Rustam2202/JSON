@@ -53,6 +53,8 @@ namespace json {
 		const Dict& AsMap() const;
 		const std::string& AsString() const;
 
+		const JSON_document& GetJsonDocument() const { return document_; }
+
 	private:
 		/*Array as_array_;
 		Dict as_map_;
@@ -81,7 +83,18 @@ namespace json {
 
 }  // namespace json
 
-inline bool operator==(json::Node left, json::Node right) {
+using namespace std;
 
-	return left.AsInt() == right.AsInt();
+struct TypeValue {
+	optional<nullptr_t> operator()(monostate) const { return nullptr; }
+	optional<double> operator()(double value) const { return value; }
+	optional<int> operator()(int value) const { return value; }
+	optional<bool> operator()(bool value) const { return value; }
+	optional<json::Array> operator()(json::Array value) const { return value; }
+	optional<json::Dict> operator()(json::Dict value) const { return value; }
+	optional<string> operator()(string value) const { return value; }
+};
+
+inline bool operator==(json::Node left, json::Node right) {
+	return visit(TypeValue{}, left.GetJsonDocument()) == visit(TypeValue{}, right.GetJsonDocument());
 }
