@@ -1,5 +1,6 @@
 #include "json.h"
 
+#include <algorithm>
 #include <cassert>
 #include <ostream>
 #include <sstream>
@@ -86,7 +87,7 @@ namespace json {
 			}
 		}
 
-		Node LoadArray(istream& input) {
+		Node LoadArray(string input/*istream& input*/) {
 			Array result;
 
 			for (char c; input >> c && c != ']';) {
@@ -110,11 +111,27 @@ namespace json {
 
 		Node LoadString(istream& input) {
 			string line;
-			getline(input, line, '"');
+			getline(input, line/*, '"'*/);
 			return Node(move(line));
 		}
 
-		Node LoadDict(istream& input) {
+		Node LoadString(string str) {
+			for (char c : str) {
+				switch (c)
+				{
+				default:
+					break;
+				}
+			}
+			return Node(move(str));
+		}
+
+		/*Node LoadString(string str) {
+			str.resize(str.size() - 1);
+			return Node(move(str));
+		}*/
+
+		Node LoadDict(/*istream&*/string input) {
 			Dict result;
 
 			for (char c; input >> c && c != '}';) {
@@ -134,7 +151,49 @@ namespace json {
 			return Node(nullptr);
 		}
 
+		Node LoadBool(bool value) {
+			return Node(value);
+		}
+
 		Node LoadNode(istream& input) {
+			string line;
+			getline(input, line);
+
+			if (line[0] == '[') {
+				if (std::count(line.begin(), line.end(), '[') % 2 == 0 &&
+					std::count(line.begin(), line.end(), '[') == std::count(line.begin(), line.end(), ']')) {
+
+					return LoadArray(move(line));
+				}
+				else {
+					throw;
+				}
+			}
+			else if (line[0] == '{') {
+				if (std::count(line.begin(), line.end(), '{') % 2 == 0 &&
+					std::count(line.begin(), line.end(), '{') == std::count(line.begin(), line.end(), '}')) {
+
+					return LoadDict(move(line));
+				}
+				else {
+					throw;
+				}
+			}
+			else if (line[0] == '"') {
+				if (std::count(line.begin(), line.end(), '"') % 2 == 0)
+					return LoadString(move(line.substr(1, line.size() - 1)));
+
+				else {
+					throw;
+				}
+			}
+			else if (isalpha(line[0])) {
+
+			}
+			else if (isdigit(line[0])) {
+
+			}
+
 			char c;
 			input >> c;
 
@@ -145,35 +204,77 @@ namespace json {
 				return LoadDict(input);
 			}
 			else if (c == '"') {
-				return LoadString(input);
+				//	input.putback(c);
+
+				return LoadString(input); // строка нчинается с '"'
+
 			}
-			else if (c == 'n') {
-				return LoadNull();
-			}
-			else {
+			else if (isalpha(c)) {
 				input.putback(c);
-				//return LoadInt(input);
+				string temp;
+				getline(input, temp);
+				if (temp == "null") {
+					return LoadNull();
+				}
+				else if (temp == "true") {
+					LoadBool(true);
+				}
+				else if (temp == "false") {
+					LoadBool(false);
+				}
+				else {
+					LoadString(temp); // строка начинается с буквы
+				}
+			}
+			else if (isdigit(c) || c == '-') { // '-' может быть и в string?
+				input.putback(c);
 				return LoadNumber(input);
 			}
 		}
 
+
+		//Node LoadNode(istream& input) {
+		//	char c;
+		//	input >> c;
+
+		//	if (c == '[') {
+		//		return LoadArray(input);
+		//	}
+		//	else if (c == '{') {
+		//		return LoadDict(input);
+		//	}
+		//	else if (c == '"') {
+		//	//	input.putback(c);
+		//		
+		//		return LoadString(input); // строка нчинается с '"'
+		//		
+		//	}
+		//	else if (isalpha(c)) {
+		//		input.putback(c);
+		//		input.seekg(0, std::ios_base::beg);
+		//		//input.end();
+		//		string temp;
+		//		getline(input, temp);
+		//		if (temp == "null") {
+		//			return LoadNull();
+		//		}
+		//		else if (temp == "true") {
+		//			LoadBool(true);
+		//		}
+		//		else if (temp == "false") {
+		//			LoadBool(false);
+		//		}
+		//		else {
+		//			LoadString(temp); // строка начинается с буквы
+		//		}
+		//	}
+		//	else if (isdigit(c) || c == '-') { // '-' может быть и в string?
+		//		input.putback(c);
+		//		return LoadNumber(input);
+		//	}
+		//}
+
 	}  // namespace
-
-	/*Node::Node(Array array)
-		: as_array_(move(array)) {
-	}
-
-	Node::Node(Dict map)
-		: as_map_(move(map)) {
-	}
-
-	Node::Node(int value)
-		: as_int_(value) {
-	}
-
-	Node::Node(string value)
-		: as_string_(move(value)) {
-	}*/
 
 	bool Node::IsNull()const {
 		return std::holds_alternative<std::nullptr_t>(document_);
@@ -198,7 +299,6 @@ namespace json {
 	bool Node::IsBool()const {
 		return std::holds_alternative<bool>(document_);
 	}
-
 
 	bool Node::IsArray()const {
 		return std::holds_alternative<Array>(document_);
@@ -232,7 +332,6 @@ namespace json {
 	}
 
 	const string& Node::AsString() const {
-		//return as_string_;
 		return std::get<std::string>(document_);
 	}
 
@@ -252,19 +351,77 @@ namespace json {
 		return Document{ LoadNode(input) };
 	}
 
+	void PrintStrng(ostream& out, const string& str) {
+		out << '\"';
+		for (char c : str) {
+			switch (c)
+			{
+			case '\\':out << "\\\\"; break;
+			case '\r':out << "\\\r"; break;
+			case '\"':out << "\\\""; break;
+			case '\t':out << "\\\t"; break;
+			case '\n':out << "\\\n"; break;
+			default:out << c;
+			}
+		}
+		out << "\"";
+	}
+
 	struct VisitTypeDocument {
 		ostream& out;
 		void operator()(nullptr_t) const { out << "null"; }
-		void operator()(double root) const { out << root; }
-		void operator()(bool root) const { out << root; }
-		void operator()(int root) const { out << root; }
-		void operator()(Dict root) const {  }
-		void operator()(Array root) const {  }
-		void operator()(std::string root) const { out << root; }
+
+		void operator()(double value) const { out << value; }
+
+		void operator()(bool value) const {
+			out << boolalpha;
+			out << value;
+		}
+
+		void operator()(int value) const { out << value; }
+
+		void operator()(Dict value) const {  }
+
+		void operator()(Array arr) const {
+			std::ostringstream strm;
+
+			size_t i = 0;
+			out << "[";
+			for (i = 0; i < arr.size() - 1; ++i) {
+
+				if (arr[i].IsString()) {
+					PrintStrng(out, arr[i].AsString());
+					/*out << "\"";
+					std::visit(VisitTypeDocument{ strm }, arr[i].GetJsonDocument());
+					out << strm.str() << "\"";*/
+				}
+				else {
+					std::visit(VisitTypeDocument{ strm }, arr[i].GetJsonDocument());
+				}
+				out << ", ";
+			}
+			if (arr[i].IsString()) {
+				PrintStrng(out, arr[i].AsString());
+
+				/*out << "\"";
+				std::visit(VisitTypeDocument{ strm }, arr[i].GetJsonDocument());
+				out << strm.str() << "\"";*/
+			}
+			else {
+				std::visit(VisitTypeDocument{ strm }, arr[i].GetJsonDocument());
+			}
+			out << "]";
+		}
+
+		void operator()(std::string str) const {
+			PrintStrng(out, str);
+			//out << "\"" << str << "\""; 
+		}
+
 	};
 
 	void Print(const Document& doc, std::ostream& output) {
-
+		//visit(VisitTypeDocument{}, doc.GetRoot().GetJsonDocument());
 		std::ostringstream strm;
 		std::visit(VisitTypeDocument{ strm }, doc.GetRoot().GetJsonDocument());
 		output << strm.str();

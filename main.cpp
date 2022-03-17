@@ -23,7 +23,6 @@ std::string Print(const Node& node) {
     return out.str();
 }
 
-
 void MustFailToLoad(const std::string& s) {
     try {
         LoadJSON(s);
@@ -106,9 +105,9 @@ void TestStrings() {
 
     assert(!str_node.IsInt());
     assert(!str_node.IsDouble());
-
-    //assert(Print(str_node) == "\"Hello, \\\"everybody\\\"\""s);
-
+   
+    assert(Print(str_node) == "\"Hello, \\\"everybody\\\"\""s);
+    cout << Print(str_node);
     assert(LoadJSON(Print(str_node)).GetRoot() == str_node);
 }
 
@@ -150,7 +149,6 @@ void TestMap() {
     assert(LoadJSON("{ \"key1\": \"value1\", \"key2\": 42 }"s).GetRoot() == dict_node);
     assert(LoadJSON(Print(dict_node)).GetRoot() == dict_node);
 }
-
 
 void TestErrorHandling() {
     MustFailToLoad("["s);

@@ -90,7 +90,22 @@ inline bool operator==(json::Node left, json::Node right) {
 	// return visit(TypeValue{}, left.GetJsonDocument()) == visit(TypeValue{}, right.GetJsonDocument());
 	{
 		if (left.IsArray() && right.IsArray()) {
-			//return left.AsArray() == right.AsArray();
+			auto a = left.AsArray();
+			auto b = right.AsArray();
+			if (a.size()==b.size()) {
+				size_t index = 0;
+				while (index < a.size()) {
+					if (a[index] != b[index]) {
+						return false;
+						index++;
+					}
+					return true;
+				}
+			}
+			else{
+				return false;
+			}
+					//return left.AsArray() == right.AsArray();
 		}
 		else if (left.IsBool() && right.IsBool()) {
 			return left.AsBool() == right.AsBool();
