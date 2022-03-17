@@ -46,6 +46,7 @@ namespace json {
 			explicit Node(int value);
 			explicit Node(std::string value);*/
 
+		//const nullopt_t AsNull() const;
 		const Array& AsArray() const;
 		bool AsBool() const;
 		double AsDouble() const;
@@ -85,16 +86,32 @@ namespace json {
 
 using namespace std;
 
-struct TypeValue {
-	optional<nullptr_t> operator()(monostate) const { return nullptr; }
-	optional<double> operator()(double value) const { return value; }
-	optional<int> operator()(int value) const { return value; }
-	optional<bool> operator()(bool value) const { return value; }
-	optional<json::Array> operator()(json::Array value) const { return value; }
-	optional<json::Dict> operator()(json::Dict value) const { return value; }
-	optional<string> operator()(string value) const { return value; }
-};
-
 inline bool operator==(json::Node left, json::Node right) {
-	return visit(TypeValue{}, left.GetJsonDocument()) == visit(TypeValue{}, right.GetJsonDocument());
+	// return visit(TypeValue{}, left.GetJsonDocument()) == visit(TypeValue{}, right.GetJsonDocument());
+	{
+		if (left.IsArray() && right.IsArray()) {
+			//return left.AsArray() == right.AsArray();
+		}
+		else if (left.IsBool() && right.IsBool()) {
+			return left.AsBool() == right.AsBool();
+		}
+		else if (left.IsDouble() && right.IsDouble()) {
+			return left.AsDouble() == right.AsDouble();
+		}
+		else if (left.IsInt() && right.IsInt()) {
+			return left.AsInt() == right.AsInt();
+		}
+		else if (left.IsMap() && right.IsMap()) {
+			//return left.AsMap() == right.AsMap();
+		}
+		else if (left.IsNull() && right.IsNull()) {
+			return true;
+		}
+		else if (left.IsPureDouble() && right.IsPureDouble()) {
+			return left.AsDouble() == right.AsDouble();
+		}
+		else if (left.IsString() && right.IsString()) {
+			return left.AsString() == right.AsString();
+		}
+	}
 }

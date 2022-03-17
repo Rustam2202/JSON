@@ -199,6 +199,7 @@ namespace json {
 		return std::holds_alternative<bool>(document_);
 	}
 
+
 	bool Node::IsArray()const {
 		return std::holds_alternative<Array>(document_);
 	}
@@ -223,7 +224,11 @@ namespace json {
 	}
 
 	double Node::AsDouble() const {
-		return std::get<double>(document_);
+		if (std::holds_alternative<double>(document_)) {
+			return std::get<double>(document_);
+		}
+		else if (std::holds_alternative<int>(document_))
+			return std::get<int>(document_);
 	}
 
 	const string& Node::AsString() const {
@@ -259,7 +264,7 @@ namespace json {
 	};
 
 	void Print(const Document& doc, std::ostream& output) {
-		
+
 		std::ostringstream strm;
 		std::visit(VisitTypeDocument{ strm }, doc.GetRoot().GetJsonDocument());
 		output << strm.str();
