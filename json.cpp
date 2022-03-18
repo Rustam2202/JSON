@@ -87,8 +87,20 @@ namespace json {
 			}
 		}
 
-		Node LoadArray(string input/*istream& input*/) {
+		Node LoadArray(/*string input*/istream& input) {
 			Array result;
+
+			//	auto a=	input.gcount();
+
+			//string line;
+			//getline(input, line);
+			//size_t square_bracket_count_open = std::count(line.begin(), line.end(), '[');
+			//size_t square_bracket_count_closed = std::count(line.begin(), line.end(), ']');
+			//if (/*square_bracket_count_open % 2 != 0 ||*/ square_bracket_count_open != square_bracket_count_closed) {
+			//	throw ParsingError(""s);
+			//}
+
+			
 
 			for (char c; input >> c && c != ']';) {
 				if (c != ',') {
@@ -100,30 +112,55 @@ namespace json {
 			return Node(move(result));
 		}
 
-		Node LoadInt(istream& input) {
-			int result = 0;
-			while (isdigit(input.peek())) {
-				result *= 10;
-				result += input.get() - '0';
-			}
-			return Node(result);
-		}
+		//Node LoadInt(istream& input) {
+		//	int result = 0;
+		//	while (isdigit(input.peek())) {
+		//		result *= 10;
+		//		result += input.get() - '0';
+		//	}
+		//	return Node(result);
+		//}
 
 		Node LoadString(istream& input) {
-			string line;
-			getline(input, line/*, '"'*/);
-			return Node(move(line));
-		}
 
-		Node LoadString(string str) {
-			for (char c : str) {
-				switch (c)
-				{
-				default:
-					break;
+			string line;
+			for (char c; input.get(c) /*input >> c*/;) {
+				if (c == '\\' && input.peek() == '\"') {
+					continue;
+				}
+				else if (c == '\\' && input.peek() == '\n') {
+					input.get();
+					line.push_back(' ');
+				}
+				else if (c == '\\' && input.peek() == '\\') {
+					continue;
+				}
+				else {
+					line.push_back(c);
 				}
 			}
-			return Node(move(str));
+			line.erase(line.begin() + line.size() - 1);
+
+			/*string line;
+			getline(input, line);
+			if (*(line.end() - 1) != '"') {
+				throw ParsingError(""s);
+			}
+			for (size_t i = 1; i < line.size(); ++i) {
+				if (line[i-1] == '\\' && line[i ] == '\"') {
+					line.erase(line.begin() + i-1);
+				}
+				if (line[i-1] == '\\' && line[i] == '\n') {
+					line.erase(line.begin() + i);
+					line[i] = ' ';
+				}
+				if (line[i-1] == '\\' && line[i] == '\\') {
+					line.erase(line.begin() + i-1);
+				}
+			}
+			line.erase(line.size() - 1);*/
+
+			return Node(move(line));
 		}
 
 		/*Node LoadString(string str) {
@@ -131,8 +168,16 @@ namespace json {
 			return Node(move(str));
 		}*/
 
-		Node LoadDict(/*istream&*/string input) {
+		Node LoadDict(istream& input) {
 			Dict result;
+
+			//string line;
+			//getline(input, line);
+			//size_t curly_bracket_count_open = std::count(line.begin(), line.end(), '{');
+			//size_t curly_bracket_count_closed = std::count(line.begin(), line.end(), '}');
+			//if (/*curly_bracket_count_open % 2 != 0 ||*/ curly_bracket_count_open != curly_bracket_count_closed) {
+			//	throw ParsingError(""s);
+			//}
 
 			for (char c; input >> c && c != '}';) {
 				if (c == ',') {
@@ -156,60 +201,23 @@ namespace json {
 		}
 
 		Node LoadNode(istream& input) {
-			string line;
-			getline(input, line);
-
-			if (line[0] == '[') {
-				if (std::count(line.begin(), line.end(), '[') % 2 == 0 &&
-					std::count(line.begin(), line.end(), '[') == std::count(line.begin(), line.end(), ']')) {
-
-					return LoadArray(move(line));
-				}
-				else {
-					throw;
-				}
-			}
-			else if (line[0] == '{') {
-				if (std::count(line.begin(), line.end(), '{') % 2 == 0 &&
-					std::count(line.begin(), line.end(), '{') == std::count(line.begin(), line.end(), '}')) {
-
-					return LoadDict(move(line));
-				}
-				else {
-					throw;
-				}
-			}
-			else if (line[0] == '"') {
-				if (std::count(line.begin(), line.end(), '"') % 2 == 0)
-					return LoadString(move(line.substr(1, line.size() - 1)));
-
-				else {
-					throw;
-				}
-			}
-			else if (isalpha(line[0])) {
-
-			}
-			else if (isdigit(line[0])) {
-
-			}
 
 			char c;
 			input >> c;
 
-			if (c == '[') {
+			if (c == '[') {				// массив
+				//input.putback(c);
 				return LoadArray(input);
 			}
-			else if (c == '{') {
+			else if (c == '{') {		// словарь
+			//	input.putback(c);
 				return LoadDict(input);
 			}
-			else if (c == '"') {
-				//	input.putback(c);
-
+			else if (c == '"') {		// строка
+				//input.putback(c);
 				return LoadString(input); // строка нчинается с '"'
-
 			}
-			else if (isalpha(c)) {
+			else if (isalpha(c)) {		// true/false/null
 				input.putback(c);
 				string temp;
 				getline(input, temp);
@@ -223,56 +231,17 @@ namespace json {
 					LoadBool(false);
 				}
 				else {
-					LoadString(temp); // строка начинается с буквы
+					throw ParsingError("Failed to convert "s + temp + " to true, false or null"s);
 				}
 			}
-			else if (isdigit(c) || c == '-') { // '-' может быть и в string?
+			else if (isdigit(c) || c == '-') { // число
 				input.putback(c);
-				return LoadNumber(input);
+				return  LoadNumber(input);
+			}
+			else {
+				throw ParsingError("");
 			}
 		}
-
-
-		//Node LoadNode(istream& input) {
-		//	char c;
-		//	input >> c;
-
-		//	if (c == '[') {
-		//		return LoadArray(input);
-		//	}
-		//	else if (c == '{') {
-		//		return LoadDict(input);
-		//	}
-		//	else if (c == '"') {
-		//	//	input.putback(c);
-		//		
-		//		return LoadString(input); // строка нчинается с '"'
-		//		
-		//	}
-		//	else if (isalpha(c)) {
-		//		input.putback(c);
-		//		input.seekg(0, std::ios_base::beg);
-		//		//input.end();
-		//		string temp;
-		//		getline(input, temp);
-		//		if (temp == "null") {
-		//			return LoadNull();
-		//		}
-		//		else if (temp == "true") {
-		//			LoadBool(true);
-		//		}
-		//		else if (temp == "false") {
-		//			LoadBool(false);
-		//		}
-		//		else {
-		//			LoadString(temp); // строка начинается с буквы
-		//		}
-		//	}
-		//	else if (isdigit(c) || c == '-') { // '-' может быть и в string?
-		//		input.putback(c);
-		//		return LoadNumber(input);
-		//	}
-		//}
 
 	}  // namespace
 
@@ -309,17 +278,23 @@ namespace json {
 	}
 
 	const Array& Node::AsArray() const {
-		//return as_array_;
+		if (!holds_alternative<Array>(document_)) {
+			throw logic_error("value is not Array-type");
+		}
 		return std::get<Array>(document_);
 	}
 
 	const Dict& Node::AsMap() const {
-		//return as_map_;
+		if (!holds_alternative<Dict>(document_)) {
+			throw logic_error("value is not Dictonary-type");
+		}
 		return std::get<Dict>(document_);
 	}
 
 	int Node::AsInt() const {
-		//return as_int_;
+		if (!holds_alternative<int>(document_)) {
+			throw logic_error("value is not int-type");
+		}
 		return std::get<int>(document_);
 	}
 
@@ -329,13 +304,22 @@ namespace json {
 		}
 		else if (std::holds_alternative<int>(document_))
 			return std::get<int>(document_);
+		else {
+			throw logic_error("value is not int or double-type");
+		}
 	}
 
 	const string& Node::AsString() const {
+		if (!holds_alternative<string>(document_)) {
+			throw logic_error("value is not String-type");
+		}
 		return std::get<std::string>(document_);
 	}
 
 	bool Node::AsBool() const {
+		if (!holds_alternative<bool>(document_)) {
+			throw logic_error("value is not bool-type");
+		}
 		return std::get<bool>(document_);
 	}
 
