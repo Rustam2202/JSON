@@ -14,7 +14,7 @@ namespace json {
 
 		Node LoadNode(istream& input);
 
-		Node /*Number*/ LoadNumber(std::istream& input) {
+		Node LoadNumber(std::istream& input) {
 			using namespace std::literals;
 
 			std::string parsed_num;
@@ -87,20 +87,41 @@ namespace json {
 			}
 		}
 
-		Node LoadArray(/*string input*/istream& input) {
+		Node LoadString(istream& input) {
+
+			string line;
+			for (char c; input.get(c);) {
+				if (c == '\\' && input.peek() == '\"') {
+					input.get(c);
+					line.push_back(c);
+				}
+				else if (c == '\\' && input.peek() == '\n') {
+					input.get();
+					line.push_back(' ');
+				}
+				else if (c == '\\' && input.peek() == '\\') {
+					input.get(c);
+					continue;
+				}
+				else if (c == '"') {
+					break;
+				}
+				else {
+					line.push_back(c);
+				}
+			}
+			if (std::count(line.begin(), line.end(), '"') % 2 != 0) {
+				throw;
+			}
+
+			return Node(move(line));
+		}
+
+		Node LoadArray(istream& input) {
+			if (input.eof()) {
+				throw ParsingError("");
+			}
 			Array result;
-
-			//	auto a=	input.gcount();
-
-			//string line;
-			//getline(input, line);
-			//size_t square_bracket_count_open = std::count(line.begin(), line.end(), '[');
-			//size_t square_bracket_count_closed = std::count(line.begin(), line.end(), ']');
-			//if (/*square_bracket_count_open % 2 != 0 ||*/ square_bracket_count_open != square_bracket_count_closed) {
-			//	throw ParsingError(""s);
-			//}
-
-			
 
 			for (char c; input >> c && c != ']';) {
 				if (c != ',') {
@@ -112,72 +133,11 @@ namespace json {
 			return Node(move(result));
 		}
 
-		//Node LoadInt(istream& input) {
-		//	int result = 0;
-		//	while (isdigit(input.peek())) {
-		//		result *= 10;
-		//		result += input.get() - '0';
-		//	}
-		//	return Node(result);
-		//}
-
-		Node LoadString(istream& input) {
-
-			string line;
-			for (char c; input.get(c) /*input >> c*/;) {
-				if (c == '\\' && input.peek() == '\"') {
-					continue;
-				}
-				else if (c == '\\' && input.peek() == '\n') {
-					input.get();
-					line.push_back(' ');
-				}
-				else if (c == '\\' && input.peek() == '\\') {
-					continue;
-				}
-				else {
-					line.push_back(c);
-				}
-			}
-			line.erase(line.begin() + line.size() - 1);
-
-			/*string line;
-			getline(input, line);
-			if (*(line.end() - 1) != '"') {
-				throw ParsingError(""s);
-			}
-			for (size_t i = 1; i < line.size(); ++i) {
-				if (line[i-1] == '\\' && line[i ] == '\"') {
-					line.erase(line.begin() + i-1);
-				}
-				if (line[i-1] == '\\' && line[i] == '\n') {
-					line.erase(line.begin() + i);
-					line[i] = ' ';
-				}
-				if (line[i-1] == '\\' && line[i] == '\\') {
-					line.erase(line.begin() + i-1);
-				}
-			}
-			line.erase(line.size() - 1);*/
-
-			return Node(move(line));
-		}
-
-		/*Node LoadString(string str) {
-			str.resize(str.size() - 1);
-			return Node(move(str));
-		}*/
-
 		Node LoadDict(istream& input) {
+			if (input.eof()) {
+				throw ParsingError("");
+			}
 			Dict result;
-
-			//string line;
-			//getline(input, line);
-			//size_t curly_bracket_count_open = std::count(line.begin(), line.end(), '{');
-			//size_t curly_bracket_count_closed = std::count(line.begin(), line.end(), '}');
-			//if (/*curly_bracket_count_open % 2 != 0 ||*/ curly_bracket_count_open != curly_bracket_count_closed) {
-			//	throw ParsingError(""s);
-			//}
 
 			for (char c; input >> c && c != '}';) {
 				if (c == ',') {
@@ -207,6 +167,10 @@ namespace json {
 
 			if (c == '[') {				// массив
 				//input.putback(c);
+				//input >> c;
+				if (input.eof()) {
+					throw ParsingError("");
+				}
 				return LoadArray(input);
 			}
 			else if (c == '{') {		// словарь
@@ -225,10 +189,10 @@ namespace json {
 					return LoadNull();
 				}
 				else if (temp == "true") {
-					LoadBool(true);
+					return	LoadBool(true);
 				}
 				else if (temp == "false") {
-					LoadBool(false);
+					return	LoadBool(false);
 				}
 				else {
 					throw ParsingError("Failed to convert "s + temp + " to true, false or null"s);
@@ -364,35 +328,44 @@ namespace json {
 
 		void operator()(int value) const { out << value; }
 
-		void operator()(Dict value) const {  }
+		void operator()(Dict value) const {
+			std::ostringstream strm;
+			out << "{";
+			size_t size = 0;
+
+			for (auto doc : value) {
+				out << "\"" << doc.first << "\": ";
+				if (doc.second.IsString()) {
+					PrintStrng(out, doc.second.AsString());
+				}
+				else {
+					std::visit(VisitTypeDocument{ strm }, doc.second.GetJsonDocument());
+					out << strm.str();
+				}
+				size++;
+				if (size < value.size()) {
+					out << ", ";
+				}
+			}
+			out << "}";
+		}
 
 		void operator()(Array arr) const {
 			std::ostringstream strm;
 
 			size_t i = 0;
 			out << "[";
-			for (i = 0; i < arr.size() - 1; ++i) {
-
+			for (i = 0; i < arr.size(); ++i) {
 				if (arr[i].IsString()) {
 					PrintStrng(out, arr[i].AsString());
-					/*out << "\"";
-					std::visit(VisitTypeDocument{ strm }, arr[i].GetJsonDocument());
-					out << strm.str() << "\"";*/
 				}
 				else {
 					std::visit(VisitTypeDocument{ strm }, arr[i].GetJsonDocument());
+					out << strm.str();
 				}
-				out << ", ";
-			}
-			if (arr[i].IsString()) {
-				PrintStrng(out, arr[i].AsString());
-
-				/*out << "\"";
-				std::visit(VisitTypeDocument{ strm }, arr[i].GetJsonDocument());
-				out << strm.str() << "\"";*/
-			}
-			else {
-				std::visit(VisitTypeDocument{ strm }, arr[i].GetJsonDocument());
+				if (i != arr.size() - 1) {
+					out << ", ";
+				}
 			}
 			out << "]";
 		}
@@ -409,35 +382,6 @@ namespace json {
 		std::ostringstream strm;
 		std::visit(VisitTypeDocument{ strm }, doc.GetRoot().GetJsonDocument());
 		output << strm.str();
-
-		//{
-		//	auto type = doc.GetRoot();
-		//	if (type.IsArray()) {
-		//		for (auto doc : type.AsArray()) {
-		//			output << doc.AsDouble(); // ?
-		//		}
-		//	}
-		//	else if (type.IsBool()) {
-		//		output << type.AsBool();
-		//	}
-		//	else if (type.IsDouble()) {
-		//		output << type.AsDouble();
-		//	}
-		//	else if (type.IsInt()) {
-		//		output << type.AsInt();
-		//	}
-		//	else if (type.IsMap()) {
-		//	}
-		//	else if (type.IsNull()) {
-		//		output << "null"s;
-		//	}
-		//	else if (type.IsPureDouble()) {
-		//		output << type.AsDouble();
-		//	}
-		//	else if (type.IsString()) {
-		//		output << type.AsString();
-		//	}
-		//}
 	}
 
 }  // namespace json
