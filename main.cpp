@@ -215,15 +215,26 @@ namespace {
 		std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << "ms"sv << std::endl;
 	}
 
+	/*
+	"[
+		{
+			\"array\": [1, 12, 123],
+			\"bool\": [1, 12, 123]true,
+			\"double\": [1, 12, 123]true42.1,
+			\"int\": [1, 12, 123]true42.142,
+			\"map\": [1, 12, 123]true42.142{\"key\": \"value\"},
+			\"null\": [1, 12, 123]true42.142{\"key\": \"...	
+	*/
+
 }  // namespace
 
 int main() {
 
-	//TestNull();
-	//TestNumbers();
-	//TestStrings();
-	//TestBool();
-	//TestArray();
+	TestNull();
+	TestNumbers();
+	TestStrings();
+	TestBool();
+	TestArray();
 	TestMap();
 	TestErrorHandling();
 	Benchmark();

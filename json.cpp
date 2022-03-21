@@ -88,7 +88,7 @@ namespace json {
 		}
 
 		Node LoadString(istream& input) {
-
+			bool quote_closed = false;
 			string line;
 			for (char c; input.get(c);) {
 				if (c == '\\' && input.peek() == '\"') {
@@ -104,14 +104,15 @@ namespace json {
 					continue;
 				}
 				else if (c == '"') {
+					quote_closed = true;
 					break;
 				}
 				else {
 					line.push_back(c);
 				}
 			}
-			if (std::count(line.begin(), line.end(), '"') % 2 != 0) {
-				throw;
+			if (!quote_closed) {
+				throw ParsingError("");
 			}
 
 			return Node(move(line));
@@ -166,20 +167,27 @@ namespace json {
 			input >> c;
 
 			if (c == '[') {				// массив
-				//input.putback(c);
-				//input >> c;
-				if (input.eof()) {
+				if (input >> c) {
+					// if(input.eof()) - не работает
+					input.putback(c);
+					return LoadArray(input);
+				}
+				else {
 					throw ParsingError("");
 				}
-				return LoadArray(input);
 			}
 			else if (c == '{') {		// словарь
-			//	input.putback(c);
-				return LoadDict(input);
+				if (input >> c) {
+					input.putback(c);
+					return LoadDict(input);
+				}
+				else {
+					throw ParsingError("");
+				}
+				
 			}
 			else if (c == '"') {		// строка
-				//input.putback(c);
-				return LoadString(input); // строка нчинается с '"'
+				return LoadString(input);
 			}
 			else if (isalpha(c)) {		// true/false/null
 				input.putback(c);
@@ -329,19 +337,21 @@ namespace json {
 		void operator()(int value) const { out << value; }
 
 		void operator()(Dict value) const {
-			std::ostringstream strm;
+			
 			out << "{";
 			size_t size = 0;
 
 			for (auto doc : value) {
+				std::ostringstream strm;
 				out << "\"" << doc.first << "\": ";
 				if (doc.second.IsString()) {
 					PrintStrng(out, doc.second.AsString());
 				}
 				else {
+					//strm.clear();
 					std::visit(VisitTypeDocument{ strm }, doc.second.GetJsonDocument());
 					out << strm.str();
-				}
+							}
 				size++;
 				if (size < value.size()) {
 					out << ", ";
@@ -357,24 +367,25 @@ namespace json {
 			out << "[";
 			for (i = 0; i < arr.size(); ++i) {
 				if (arr[i].IsString()) {
-					PrintStrng(out, arr[i].AsString());
+					PrintStrng(cout, arr[i].AsString());
 				}
 				else {
 					std::visit(VisitTypeDocument{ strm }, arr[i].GetJsonDocument());
 					out << strm.str();
+					strm.clear();
 				}
 				if (i != arr.size() - 1) {
 					out << ", ";
 				}
 			}
 			out << "]";
+			
 		}
 
 		void operator()(std::string str) const {
 			PrintStrng(out, str);
 			//out << "\"" << str << "\""; 
 		}
-
 	};
 
 	void Print(const Document& doc, std::ostream& output) {
