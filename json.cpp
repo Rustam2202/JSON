@@ -96,13 +96,26 @@ namespace json {
 					line.push_back(c);
 				}
 				else if (c == '\\' && input.peek() == '\n') {
+					/*input.get(c);
+					line.push_back(c);*/
 					input.get();
-					line.push_back(' ');
+					//line.push_back(' ');
+				}
+				else if (c == '\\' && input.peek() == '\t') {
+					input.get();
+					//line.push_back('c');
+				}
+				else if (c == '\\' && input.peek() == '\r') {
+					input.get();
+					//line.push_back('c');
 				}
 				else if (c == '\\' && input.peek() == '\\') {
-					input.get(c);
-					continue;
+					input.get();
+					//line.push_back('c');
 				}
+				/*else if (c == '\\' && input.peek() == ' ') {
+					input.get();
+				}*/
 				else if (c == '"') {
 					quote_closed = true;
 					break;
@@ -166,33 +179,46 @@ namespace json {
 			char c;
 			input >> c;
 
-			if (c == '[') {				// массив
+			// массив Array
+			if (c == '[') {
 				if (input >> c) {
 					// if(input.eof()) - не работает
 					input.putback(c);
 					return LoadArray(input);
 				}
 				else {
-					throw ParsingError("");
+					throw ParsingError("Empty array");
 				}
 			}
-			else if (c == '{') {		// словарь
+			// словарь Dict
+			else if (c == '{') {
 				if (input >> c) {
 					input.putback(c);
 					return LoadDict(input);
 				}
 				else {
-					throw ParsingError("");
+					throw ParsingError("Empty dictonary");
 				}
-				
+
 			}
-			else if (c == '"') {		// строка
+			// строка String
+			else if (c == '"') {
 				return LoadString(input);
 			}
-			else if (isalpha(c)) {		// true/false/null
-				input.putback(c);
+			// true/false/null
+			else if (isalpha(c)) {
+				//input.putback(c);
 				string temp;
-				getline(input, temp);
+				/*input.getline(&temp[0], 5);
+				getline(input, temp);*/
+
+				while (c != '}' && c != ']'&&c!=',' && !input.eof()) {
+
+					temp.push_back(c);
+					input.get(c);
+				}
+				input.putback(c);
+
 				if (temp == "null") {
 					return LoadNull();
 				}
@@ -202,14 +228,17 @@ namespace json {
 				else if (temp == "false") {
 					return	LoadBool(false);
 				}
+				// все остальное - неправильный ввод
 				else {
 					throw ParsingError("Failed to convert "s + temp + " to true, false or null"s);
 				}
 			}
-			else if (isdigit(c) || c == '-') { // число
+			// число
+			else if (isdigit(c) || c == '-') {
 				input.putback(c);
 				return  LoadNumber(input);
 			}
+			// не число, не буква, не массив, ...
 			else {
 				throw ParsingError("");
 			}
@@ -337,7 +366,7 @@ namespace json {
 		void operator()(int value) const { out << value; }
 
 		void operator()(Dict value) const {
-			
+
 			out << "{";
 			size_t size = 0;
 
@@ -351,7 +380,7 @@ namespace json {
 					//strm.clear();
 					std::visit(VisitTypeDocument{ strm }, doc.second.GetJsonDocument());
 					out << strm.str();
-							}
+				}
 				size++;
 				if (size < value.size()) {
 					out << ", ";
@@ -361,25 +390,24 @@ namespace json {
 		}
 
 		void operator()(Array arr) const {
-			std::ostringstream strm;
-
 			size_t i = 0;
 			out << "[";
 			for (i = 0; i < arr.size(); ++i) {
+				std::ostringstream strm;
 				if (arr[i].IsString()) {
-					PrintStrng(cout, arr[i].AsString());
+					PrintStrng(out, arr[i].AsString());
 				}
 				else {
 					std::visit(VisitTypeDocument{ strm }, arr[i].GetJsonDocument());
 					out << strm.str();
-					strm.clear();
+					//strm.clear();
 				}
 				if (i != arr.size() - 1) {
 					out << ", ";
 				}
 			}
 			out << "]";
-			
+
 		}
 
 		void operator()(std::string str) const {
@@ -389,10 +417,25 @@ namespace json {
 	};
 
 	void Print(const Document& doc, std::ostream& output) {
-		//visit(VisitTypeDocument{}, doc.GetRoot().GetJsonDocument());
 		std::ostringstream strm;
 		std::visit(VisitTypeDocument{ strm }, doc.GetRoot().GetJsonDocument());
 		output << strm.str();
+	}
+
+	bool operator== (const Node& lhs, const Node& rhs) {
+		return	lhs.GetJsonDocument().index() == rhs.GetJsonDocument().index();
+	}
+
+	bool operator!= (const Node& lhs, const Node& rhs) {
+		return !(lhs == rhs);
+	}
+
+	bool operator==(const Document& lhs, const Document& rhs) {
+		return lhs.GetRoot().GetJsonDocument().index() == rhs.GetRoot().GetJsonDocument().index();
+	}
+
+	bool operator!=(const Document& lhs, const Document& rhs) {
+		return !(lhs == rhs);
 	}
 
 }  // namespace json

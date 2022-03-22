@@ -113,7 +113,6 @@ namespace {
 		assert(!str_node.IsDouble());
 
 		assert(Print(str_node) == "\"Hello, \\\"everybody\\\"\""s);
-		cout << Print(str_node);
 		assert(LoadJSON(Print(str_node)).GetRoot() == str_node);
 	}
 
@@ -196,7 +195,7 @@ namespace {
 		const auto start = std::chrono::steady_clock::now();
 		Array arr;
 		arr.reserve(1'000);
-		for (int i = 0; i < 1'000; ++i) {
+		for (int i = 0; i < 1000; ++i) {
 			arr.emplace_back(Dict{
 				{"int"s, 42},
 				{"double"s, 42.1},
@@ -209,26 +208,29 @@ namespace {
 		}
 		std::stringstream strm;
 		json::Print(Document{ arr }, strm);
+		//std::cout << strm.str();
 		const auto doc = json::Load(strm);
-		assert(doc.GetRoot() == arr);
+		//Node a = doc.GetRoot();
+		//assert(doc.GetRoot() == arr);
 		const auto duration = std::chrono::steady_clock::now() - start;
 		std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << "ms"sv << std::endl;
 	}
 
-	/*
-	"[
-		{
-			\"array\": [1, 12, 123],
-			\"bool\": [1, 12, 123]true,
-			\"double\": [1, 12, 123]true42.1,
-			\"int\": [1, 12, 123]true42.142,
-			\"map\": [1, 12, 123]true42.142{\"key\": \"value\"},
-			\"null\": [1, 12, 123]true42.142{\"key\": \"...	
-	*/
-
 }  // namespace
 
 int main() {
+
+	Array arr;
+	arr.reserve(5);
+	arr.emplace_back(Dict{
+		//{"array"s, Array{1, 		2, 		3}},
+		{"map"s, Dict{{"key"s, "\nvalue"s}}},
+		{"bool"s, true},
+		});
+	std::stringstream strm;
+	json::Print(Document{ arr }, strm);
+	std::cout << strm.str();
+	const auto doc = json::Load(strm);
 
 	TestNull();
 	TestNumbers();

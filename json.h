@@ -50,6 +50,14 @@ namespace json {
 
 		const JSON_document& GetJsonDocument() const { return document_; }
 
+		bool operator==(const Node& node) {
+			return (*this).GetJsonDocument().index() == node.GetJsonDocument().index();
+		}
+		bool operator!=(const Node& node) {
+			return !((*this) == node);
+		}
+
+
 	private:
 		JSON_document document_;
 	};
@@ -60,6 +68,13 @@ namespace json {
 
 		const Node& GetRoot() const;
 
+		bool operator==(const Document& doc) {
+			return (*this).GetRoot().GetJsonDocument().index() == doc.GetRoot().GetJsonDocument().index();
+		}
+		bool operator!=(const Document& doc) {
+			return !((*this) == doc);
+		}
+
 	private:
 		Node root_;
 	};
@@ -68,141 +83,10 @@ namespace json {
 
 	void Print(const Document& doc, std::ostream& output);
 
+	bool operator== (const Node& lhs, const Node& rhs);
+	bool operator!= (const Node& lhs, const Node& rhs);
+	bool operator==(const Document& lhs, const Document& rhs);
+	bool operator!=(const Document& lhs, const Document& rhs);
+
 }  // namespace json
 
-using namespace std;
-
-inline bool operator==(json::Array left, json::Array right) {
-	return left == right;
-}
-
-//struct VisitEqualtypes {
-//	nullptr_t operator()(nullptr_t) const { return nullptr; }
-//
-//	double operator()(double value) const { return value; }
-//
-//	bool operator()(bool value) const {	return value;	}
-//
-//	int operator()(int value) const { return value; }
-//
-//	json::Dict operator()(json::Dict value) const {	return value;	}
-//
-//	json::Array operator()(json::Array arr) const {	return arr;			}
-//
-//	std::string operator()(std::string str) const {	return str;}
-//};
-
-inline bool operator==(json::Node left, json::Node right) {
-	{
-		if (left.IsArray() && right.IsArray()) {
-			auto a = left.AsArray();
-			auto b = right.AsArray();
-
-			if (left.AsArray().size() != right.AsArray().size()) {
-				return false;
-			}
-			for (size_t i = 0; i < left.AsArray().size(); ++i) {
-				if (a[i].IsBool() && b[i].IsBool()) {
-					if (a[i].AsBool() != b[i].AsBool()) {
-						return false;
-					}
-				}
-				else if (a[i].IsDouble() && b[i].IsDouble()) {
-					if (a[i].AsDouble() != b[i].AsDouble()) {
-						return false;
-					}
-				}
-				else if (a[i].IsInt() && b[i].IsInt()) {
-					if (a[i].AsInt() != b[i].AsInt()) {
-						return false;
-					}
-				}
-				else if (a[i].IsNull() && b[i].IsNull()) {
-
-				}
-				else if (a[i].IsPureDouble() && b[i].IsPureDouble()) {
-					if (a[i].AsDouble() != b[i].AsDouble()) {
-						return false;
-					}
-				}
-				else if (a[i].IsString() && b[i].IsString()) {
-					if (a[i].AsString() != b[i].AsString()) {
-						return false;
-					}
-				}
-				else {
-					return false;
-				}
-			}
-			return true;
-		}
-
-		if (left.IsBool() && right.IsBool()) {
-			return left.AsBool() == right.AsBool();
-		}
-		else if (left.IsDouble() && right.IsDouble()) {
-			return left.AsDouble() == right.AsDouble();
-		}
-		else if (left.IsInt() && right.IsInt()) {
-			return left.AsInt() == right.AsInt();
-		}
-		else if (left.IsMap() && right.IsMap()) {
-			if (left.AsMap().size() != right.AsMap().size()) {
-				return false;
-			}
-			for (auto dict : left.AsMap()) {
-				if (right.AsMap().count(dict.first)) {
-					auto temp = right.AsMap().at(dict.first);
-					
-
-
-					if (dict.second.IsBool()) {
-						if (dict.second.AsBool() != right.AsMap().at(dict.first)) {
-							return false;
-						}
-					}
-					else if (dict.second.IsDouble()) {
-						if (dict.second.AsDouble() != right.AsMap().at(dict.first)) {
-							return false;
-						}
-					}
-
-					else if (dict.second.IsInt()) {
-						if (dict.second.AsInt() != right.AsMap().at(dict.first)) {
-							return false;
-						}
-					}
-					else if (dict.second.IsString()) {
-						if (dict.second.AsString() != right.AsMap().at(dict.first)) {
-							return false;
-						}
-					}
-				}
-				else {
-					return false;
-				}
-			}
-			return true;
-		}
-		else if (left.IsNull() && right.IsNull()) {
-			return true;
-		}
-		else if (left.IsPureDouble() && right.IsPureDouble()) {
-			return left.AsDouble() == right.AsDouble();
-		}
-		else if (left.IsString() && right.IsString()) {
-			return left.AsString() == right.AsString();
-		}
-	}
-}
-
-inline bool operator!=(json::Node left, json::Node right) {
-	return !(left == right);
-}
-
-inline bool operator==(json::Document left, json::Document right) {
-	return left.GetRoot() == right.GetRoot();
-}
-inline bool operator!=(json::Document left, json::Document right) {
-	return !(left.GetRoot() == right.GetRoot());
-}
