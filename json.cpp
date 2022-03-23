@@ -88,46 +88,31 @@ namespace json {
 		}
 
 		Node LoadString(istream& input) {
-			bool quote_closed = false;
 			string line;
-			for (char c; input.get(c);) {
-				if (c == '\\' && input.peek() == '\"') {
-					input.get(c);
+			char c;
+			for (; input.get(c) && c != '\"';) {
+				switch (c) {
+				case '\\':
+					if (input.peek() == '\"') {
+						input.get(c);
+						line.push_back('c');
+					}
+					break;
+				case '\t':
+					line.push_back(' ');
+					break;
+				case '\r':break;
+				case '\n':break;
+				case '\"':line.push_back(c); break;
+				default:
 					line.push_back(c);
-				}
-				else if (c == '\\' && input.peek() == '\n') {
-					/*input.get(c);
-					line.push_back(c);*/
-					input.get();
-					//line.push_back(' ');
-				}
-				else if (c == '\\' && input.peek() == '\t') {
-					input.get();
-					//line.push_back('c');
-				}
-				else if (c == '\\' && input.peek() == '\r') {
-					input.get();
-					//line.push_back('c');
-				}
-				else if (c == '\\' && input.peek() == '\\') {
-					input.get();
-					//line.push_back('c');
-				}
-				/*else if (c == '\\' && input.peek() == ' ') {
-					input.get();
-				}*/
-				else if (c == '"') {
-					quote_closed = true;
 					break;
 				}
-				else {
-					line.push_back(c);
-				}
 			}
-			if (!quote_closed) {
-				throw ParsingError("");
+			if (c != '\"') {
+				throw ParsingError("No closing quote");
 			}
-
+			
 			return Node(move(line));
 		}
 
@@ -178,6 +163,9 @@ namespace json {
 
 			char c;
 			input >> c;
+			while (c == '\\' || c == '\t' || c == '\r' || c == '\n') {
+				input >> c;
+			}
 
 			// массив Array
 			if (c == '[') {
@@ -202,17 +190,13 @@ namespace json {
 
 			}
 			// строка String
-			else if (c == '"') {
+			else if (c == '\"') {
 				return LoadString(input);
 			}
 			// true/false/null
 			else if (isalpha(c)) {
-				//input.putback(c);
 				string temp;
-				/*input.getline(&temp[0], 5);
-				getline(input, temp);*/
-
-				while (c != '}' && c != ']'&&c!=',' && !input.eof()) {
+				while (c != '}' && c != ']' && c != ',' && c!='\n' && !input.eof()) {
 
 					temp.push_back(c);
 					input.get(c);
@@ -383,7 +367,7 @@ namespace json {
 				}
 				size++;
 				if (size < value.size()) {
-					out << ", ";
+					out << ",";
 				}
 			}
 			out << "}";
@@ -403,7 +387,7 @@ namespace json {
 					//strm.clear();
 				}
 				if (i != arr.size() - 1) {
-					out << ", ";
+					out << ",";
 				}
 			}
 			out << "]";
@@ -412,7 +396,6 @@ namespace json {
 
 		void operator()(std::string str) const {
 			PrintStrng(out, str);
-			//out << "\"" << str << "\""; 
 		}
 	};
 

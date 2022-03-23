@@ -111,6 +111,7 @@ namespace {
 
 		assert(!str_node.IsInt());
 		assert(!str_node.IsDouble());
+		std::cout <<std::endl<< Print(str_node);
 
 		assert(Print(str_node) == "\"Hello, \\\"everybody\\\"\""s);
 		assert(LoadJSON(Print(str_node)).GetRoot() == str_node);
@@ -151,7 +152,7 @@ namespace {
 		assert(dict.at("key1"s).AsString() == "value1"s);
 		assert(dict.at("key2"s).AsInt() == 42);
 
-		assert(LoadJSON("{ \"key1\": \"value1\", \"key2\": 42 }"s).GetRoot() == dict_node);
+		assert(LoadJSON("{ \"key1\": \"value1\",\"key2\": 42 }"s).GetRoot() == dict_node);
 		assert(LoadJSON(Print(dict_node)).GetRoot() == dict_node);
 	}
 
@@ -208,10 +209,7 @@ namespace {
 		}
 		std::stringstream strm;
 		json::Print(Document{ arr }, strm);
-		//std::cout << strm.str();
 		const auto doc = json::Load(strm);
-		//Node a = doc.GetRoot();
-		//assert(doc.GetRoot() == arr);
 		const auto duration = std::chrono::steady_clock::now() - start;
 		std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << "ms"sv << std::endl;
 	}
@@ -219,18 +217,35 @@ namespace {
 }  // namespace
 
 int main() {
+	{
+		/*std::string str{ "\ntext,\\ \"text2\", \n\ttext3\"\""s };
+		std::stringstream strm(str);
+		std::cout << strm.str() << std::endl;
+		Document doc = json::Load(strm);*/
 
-	Array arr;
-	arr.reserve(5);
-	arr.emplace_back(Dict{
-		//{"array"s, Array{1, 		2, 		3}},
-		{"map"s, Dict{{"key"s, "\nvalue"s}}},
-		{"bool"s, true},
-		});
-	std::stringstream strm;
-	json::Print(Document{ arr }, strm);
-	std::cout << strm.str();
-	const auto doc = json::Load(strm);
+
+		/*json::Print(Document(str), strm);
+		std::cout << strm.str() << std::endl;
+		Document doc = json::Load(strm);
+		json::Print(doc, strm2);
+		std::cout << strm2.str();*/
+	}
+	{
+		Array arr;
+		arr.reserve(5);
+		arr.emplace_back(Dict{
+			{"array\n first\\"s, Array{1,2,3}},
+			{"map \tsecond"s, Dict{{"key"s,
+			"value"s}}},
+			{"bool"s, true},
+			});
+		std::stringstream strm, strm2;
+		json::Print(Document{ arr }, strm);
+		std::cout << strm.str()<<std::endl;
+		Document doc = json::Load(strm);
+		json::Print(doc, strm2);
+		std::cout << strm2.str() << std::endl;
+	}
 
 	TestNull();
 	TestNumbers();
