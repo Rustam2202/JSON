@@ -95,14 +95,11 @@ namespace json {
 				if (c == '\\') {
 					input.get(c);
 					switch (c) {
-					case 'n':
-					case '\n':
-					case 't':
-					case '\t':
-					case 'r':
-					case '\r':
-					case '\\':break;
-					case '\"':line.push_back(c); break;
+					case 'n':line.push_back('\n'); break;
+					case 't':line.push_back('\t'); break;
+					case 'r':line.push_back('\r'); break;
+					case '\\':line.push_back('\\'); break;
+					case '\"':line.push_back('\"'); break;
 					default:
 						line.push_back(c);
 						break;
@@ -113,28 +110,6 @@ namespace json {
 				}
 			}
 
-			//for (; input.get(c) && c != '\"';) {
-			//	switch (c) {
-			//	case '\\':
-			//		if (input.peek() == '\"') {
-			//			input.get(c);
-			//			line.push_back(c);
-			//		}
-			//		/*else if (input.peek() == 'n') {
-			//			input.get();
-			//		}*/
-			//		break;
-			//	case 't':
-			//		line.push_back(' ');
-			//		break;
-			//	case 'r':break;
-			//	case 'n':break;
-			//	case '\"':line.push_back(c); break;
-			//	default:
-			//		line.push_back(c);
-			//		break;
-			//	}
-			//}
 			if (c != '\"') {
 				throw ParsingError("No closing quote");
 			}
@@ -189,9 +164,6 @@ namespace json {
 
 			char c;
 			input >> c;
-			/*while (c == '\\' || c == '\t' || c == '\r' || c == '\n') {
-				input >> c;
-			}*/
 
 			// массив Array
 			if (c == '[') {
