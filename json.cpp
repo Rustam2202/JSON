@@ -90,29 +90,55 @@ namespace json {
 		Node LoadString(istream& input) {
 			string line;
 			char c;
+
 			for (; input.get(c) && c != '\"';) {
-				switch (c) {
-				case '\\':
-					if (input.peek() == '\"') {
-						input.get(c);
-						line.push_back('c');
+				if (c == '\\') {
+					input.get(c);
+					switch (c) {
+					case 'n':
+					case '\n':
+					case 't':
+					case '\t':
+					case 'r':
+					case '\r':
+					case '\\':break;
+					case '\"':line.push_back(c); break;
+					default:
+						line.push_back(c);
+						break;
 					}
-					break;
-				case '\t':
-					line.push_back(' ');
-					break;
-				case '\r':break;
-				case '\n':break;
-				case '\"':line.push_back(c); break;
-				default:
+				}
+				else {
 					line.push_back(c);
-					break;
 				}
 			}
+
+			//for (; input.get(c) && c != '\"';) {
+			//	switch (c) {
+			//	case '\\':
+			//		if (input.peek() == '\"') {
+			//			input.get(c);
+			//			line.push_back(c);
+			//		}
+			//		/*else if (input.peek() == 'n') {
+			//			input.get();
+			//		}*/
+			//		break;
+			//	case 't':
+			//		line.push_back(' ');
+			//		break;
+			//	case 'r':break;
+			//	case 'n':break;
+			//	case '\"':line.push_back(c); break;
+			//	default:
+			//		line.push_back(c);
+			//		break;
+			//	}
+			//}
 			if (c != '\"') {
 				throw ParsingError("No closing quote");
 			}
-			
+
 			return Node(move(line));
 		}
 
@@ -163,9 +189,9 @@ namespace json {
 
 			char c;
 			input >> c;
-			while (c == '\\' || c == '\t' || c == '\r' || c == '\n') {
+			/*while (c == '\\' || c == '\t' || c == '\r' || c == '\n') {
 				input >> c;
-			}
+			}*/
 
 			// массив Array
 			if (c == '[') {
@@ -196,7 +222,7 @@ namespace json {
 			// true/false/null
 			else if (isalpha(c)) {
 				string temp;
-				while (c != '}' && c != ']' && c != ',' && c!='\n' && !input.eof()) {
+				while (c != '}' && c != ']' && c != ',' && c != '\n' && !input.eof()) {
 
 					temp.push_back(c);
 					input.get(c);

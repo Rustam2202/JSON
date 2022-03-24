@@ -218,10 +218,10 @@ namespace {
 
 int main() {
 	{
-		/*std::string str{ "\ntext,\\ \"text2\", \n\ttext3\"\""s };
+		std::string str{ "\"\\\ntext,\\ \\\"text2\\\", \\\n\\\ttext3\\\"\\\""s };
 		std::stringstream strm(str);
 		std::cout << strm.str() << std::endl;
-		Document doc = json::Load(strm);*/
+		Document doc = json::Load(strm);
 
 
 		/*json::Print(Document(str), strm);
@@ -231,7 +231,7 @@ int main() {
 		std::cout << strm2.str();*/
 	}
 	{
-		Array arr;
+	/*	Array arr;
 		arr.reserve(5);
 		arr.emplace_back(Dict{
 			{"array\n first\\"s, Array{1,2,3}},
@@ -244,7 +244,7 @@ int main() {
 		std::cout << strm.str()<<std::endl;
 		Document doc = json::Load(strm);
 		json::Print(doc, strm2);
-		std::cout << strm2.str() << std::endl;
+		std::cout << strm2.str() << std::endl;*/
 	}
 
 	TestNull();
