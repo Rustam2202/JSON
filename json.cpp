@@ -404,7 +404,7 @@ namespace json {
 	}
 
 	bool operator== (const Node& lhs, const Node& rhs) {
-		return	lhs.GetJsonDocument().index() == rhs.GetJsonDocument().index();
+		return	lhs.GetJsonDocument() == rhs.GetJsonDocument();
 	}
 
 	bool operator!= (const Node& lhs, const Node& rhs) {
@@ -412,7 +412,7 @@ namespace json {
 	}
 
 	bool operator==(const Document& lhs, const Document& rhs) {
-		return lhs.GetRoot().GetJsonDocument().index() == rhs.GetRoot().GetJsonDocument().index();
+		return lhs.GetRoot().GetJsonDocument() == rhs.GetRoot().GetJsonDocument();
 	}
 
 	bool operator!=(const Document& lhs, const Document& rhs) {

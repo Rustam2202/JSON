@@ -69,7 +69,7 @@ namespace json {
 		const Node& GetRoot() const;
 
 		bool operator==(const Document& doc) {
-			return (*this).GetRoot().GetJsonDocument().index() == doc.GetRoot().GetJsonDocument().index();
+			return (*this).GetRoot().GetJsonDocument() == doc.GetRoot().GetJsonDocument();
 		}
 		bool operator!=(const Document& doc) {
 			return !((*this) == doc);
