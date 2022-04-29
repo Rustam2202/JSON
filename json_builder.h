@@ -7,11 +7,16 @@ using namespace std;
 
 namespace json {
 
-	class Builder : private Node {
+	class Builder /*: private Node*/ {
 	public:
 
 		Builder& Key(std::string str) {
-
+			//Node temp = str;
+			auto n = Node{ str };
+			auto nn = &n;
+			Dict temp;
+			temp[str] ;
+			nodes_stack_.emplace_back(temp);
 			return *this;
 		}
 
@@ -20,8 +25,7 @@ namespace json {
 			Node temp;
 			if (holds_alternative<std::nullptr_t>(value)) {
 				temp = std::get<std::nullptr_t>(value);
-
-				nodes_stack_.emplace_back(Node{ temp });
+				//	nodes_stack_.emplace_back(Node{ temp });
 			}
 			else if (holds_alternative<bool>(value)) {
 				temp = move(get<bool>(value));
@@ -33,7 +37,19 @@ namespace json {
 				temp = std::get<double>(value);
 			}
 			else if (holds_alternative<std::string>(value)) {
-				temp = std::get<std::string>(move(value));
+				auto th = this;
+
+				auto v = value;
+				auto vv = &v;
+				temp = std::get<std::string>(value);
+				auto tt = &temp;
+				Node* str2{ &temp };
+				auto s = get<string>(value);
+				Node{ s };
+				//	Node* str3{ Node{s } };
+
+				int a = 0;
+				nodes_stack_.emplace_back(&temp);
 			}
 			else if (holds_alternative<json::Array>(value)) {
 				temp = std::get<int>(value);
@@ -41,14 +57,17 @@ namespace json {
 			else if (holds_alternative<json::Dict>(value)) {
 				temp = std::get<int>(value);
 			}
-			nodes_.push_back(move(temp));
+
+			Node str{ "string" };
+
+			//nodes_.push_back(move(temp));
 			return *this;
 		}
 
 		Builder& StartDict() {
 			Node temp = (this->Build());
-			nodes_stack_.emplace_back(&temp);
-			//temp = std::get<Dict>(*this->root_);
+			//	nodes_stack_.emplace_back(&temp);
+				//temp = std::get<Dict>(*this->root_);
 			return *this;
 		}
 
@@ -59,9 +78,9 @@ namespace json {
 			Array arr;
 			arr.resize(1);
 			Node temp = arr;
-			nodes_.push_back(arr);
+			//	nodes_.push_back(arr);
 
-			//nodes_s.emplace_back(&temp);
+				//nodes_s.emplace_back(&temp);
 			return *this;
 		}
 

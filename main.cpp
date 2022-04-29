@@ -6,18 +6,23 @@ using namespace std;
 
 int main() {
 
-	json::Print(
-		json::Document{
-			json::Builder{}
-			.StartArray()
-			.Value(123)
-			.Value("just a string"s)
-		//    .EndArray()
-			.Build()
-		},
-		cout
-	);
-	cout << endl;
+	//json::Print(
+	//	json::Document{
+	//		json::Builder{}
+	//			.StartDict()
+	//				.Key("key")
+	//				.Value("value")
+	//			.EndDict()
+
+	//			.StartArray()
+	//				.Value(123)
+	//				.Value("just a string"s)
+	//	//    .EndArray()
+	//		.Build()
+	//	},
+	//	cout
+	//);
+	//cout << endl;
 
 	json::Print(
 		json::Document{
