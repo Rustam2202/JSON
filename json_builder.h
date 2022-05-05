@@ -1,5 +1,6 @@
 #include "json.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,14 +12,20 @@ namespace json {
 	public:
 
 		Builder& Key(std::string str) {
-			//Node temp = str;
-			auto n = Node{ str };
-			auto nn = &n;
-			Dict temp;
-			temp[str] ;
-			nodes_stack_.emplace_back(temp);
+
+			//if (nodes_stack_.back()->IsDict()) {
+			//	nodes_stack_.back()->AsDict();
+			//	auto& d = nodes_stack_.back()->AsDict();
+			//}
+
+			this->nodes_stack_;
+
+			Node* key = new Node(str);
+			nodes_stack_.emplace_back(key);
+
 			return *this;
 		}
+
 
 		Builder& Value(Node::Value value) {
 			//Node* ptr;
@@ -37,19 +44,8 @@ namespace json {
 				temp = std::get<double>(value);
 			}
 			else if (holds_alternative<std::string>(value)) {
-				auto th = this;
-
-				auto v = value;
-				auto vv = &v;
-				temp = std::get<std::string>(value);
-				auto tt = &temp;
-				Node* str2{ &temp };
-				auto s = get<string>(value);
-				Node{ s };
-				//	Node* str3{ Node{s } };
-
-				int a = 0;
-				nodes_stack_.emplace_back(&temp);
+				Node* val = new Node(std::get<string>(value));
+				nodes_stack_.emplace_back(val);
 			}
 			else if (holds_alternative<json::Array>(value)) {
 				temp = std::get<int>(value);
@@ -65,22 +61,22 @@ namespace json {
 		}
 
 		Builder& StartDict() {
-			Node temp = (this->Build());
-			//	nodes_stack_.emplace_back(&temp);
-				//temp = std::get<Dict>(*this->root_);
+			Dict tmp;
+
+			Node* nod = new Node{ Dict{} };
+			auto nod2 = make_shared<Node>(Dict{});
+			shared_ptr<Node> pn(nod);
+
+			nodes_stack_.emplace_back(new Node{ Dict{} });
+			//nodes_stack_.emplace_back(shared_ptr<Node>(nod).get());
+			nodes_stack_.back()->IsDict();
+
 			return *this;
+			//return tmp;
 		}
 
 		Builder& StartArray() {
-			//	Node temp = (this->Build());
-			//	nodes_stack_.emplace_back(&temp);
-			//	(*this).Value(Node::Value);
-			Array arr;
-			arr.resize(1);
-			Node temp = arr;
-			//	nodes_.push_back(arr);
 
-				//nodes_s.emplace_back(&temp);
 			return *this;
 		}
 
@@ -95,14 +91,16 @@ namespace json {
 		}
 
 		Node Build() {
-			if (nodes_.empty()) {
+			if (nodes_stack_.empty()) {
 				return Node{};
 			}
 
-			for (auto it = nodes_stack_.front(); it != nodes_stack_.back() - 1; ++it) {
-				if (it->IsArray()) {
-					auto a = (*it).AsArray();
-					a.push_back(*(it + 1));
+
+			for (int i = 0; i < nodes_stack_.size(); ++i) {
+				if (nodes_stack_[i]->IsDict()) {
+					Dict temp;
+					temp[nodes_stack_[i + 1]->AsString()];
+					
 				}
 			}
 
@@ -113,6 +111,6 @@ namespace json {
 	private:
 		Node root_;
 		std::vector<Node*> nodes_stack_;
-		std::vector<Node> nodes_;
+		//	std::vector<Node> nodes_;
 	};
 }
