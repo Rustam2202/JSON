@@ -13,26 +13,18 @@ namespace json {
 
 		Builder& Key(std::string str) {
 
-			//if (nodes_stack_.back()->IsDict()) {
-			//	nodes_stack_.back()->AsDict();
-			//	auto& d = nodes_stack_.back()->AsDict();
-			//}
-
-			this->nodes_stack_;
-
-			Node* key = new Node(str);
-			nodes_stack_.emplace_back(key);
+			if (nodes_stack_.back()->IsDict()) {
+				nodes_stack_.emplace_back(new Node(str));
+			}
 
 			return *this;
 		}
 
 
 		Builder& Value(Node::Value value) {
-			//Node* ptr;
 			Node temp;
 			if (holds_alternative<std::nullptr_t>(value)) {
 				temp = std::get<std::nullptr_t>(value);
-				//	nodes_stack_.emplace_back(Node{ temp });
 			}
 			else if (holds_alternative<bool>(value)) {
 				temp = move(get<bool>(value));
@@ -44,32 +36,40 @@ namespace json {
 				temp = std::get<double>(value);
 			}
 			else if (holds_alternative<std::string>(value)) {
-				Node* val = new Node(std::get<string>(value));
-				nodes_stack_.emplace_back(val);
+				temp = std::get<string>(value);
 			}
 			else if (holds_alternative<json::Array>(value)) {
-				temp = std::get<int>(value);
+				temp = std::get<Array>(value);
 			}
 			else if (holds_alternative<json::Dict>(value)) {
-				temp = std::get<int>(value);
+				temp = std::get<Dict>(value);
 			}
 
-			Node str{ "string" };
+			auto key = move(nodes_stack_.back());
+			if (!nodes_stack_.empty()) {
+				nodes_stack_.pop_back();
+			}
+			Dict& dict = const_cast<Dict&>(nodes_stack_.back()->AsDict());
+			dict[key->AsString()] = temp;
 
-			//nodes_.push_back(move(temp));
 			return *this;
 		}
 
 		Builder& StartDict() {
-			Dict tmp;
 
+			nodes_stack_.emplace_back(new Node(Dict{}));
+
+			//Node a = Node(Dict{});
+		//	auto u = make_unique<Node>(Dict{});
+			//nodes_stack_.emplace_back(u.get());
+			//nodes_stack_.emplace_back(make_unique<Node>(Dict{}).get());
+			/*Dict tmp;
 			Node* nod = new Node{ Dict{} };
 			auto nod2 = make_shared<Node>(Dict{});
 			shared_ptr<Node> pn(nod);
-
 			nodes_stack_.emplace_back(new Node{ Dict{} });
-			//nodes_stack_.emplace_back(shared_ptr<Node>(nod).get());
-			nodes_stack_.back()->IsDict();
+			nodes_stack_.emplace_back(shared_ptr<Node>(nod).get());
+			nodes_stack_.back()->IsDict();*/
 
 			return *this;
 			//return tmp;
@@ -81,8 +81,10 @@ namespace json {
 		}
 
 		Builder& EndDict() {
-
-			return *this;
+			auto dict = nodes_stack_.back()->AsDict();
+			nodes_stack_.pop_back();
+			return Value(move(dict));
+			//return *this;
 		}
 
 		Builder& EndArray() {
@@ -100,7 +102,7 @@ namespace json {
 				if (nodes_stack_[i]->IsDict()) {
 					Dict temp;
 					temp[nodes_stack_[i + 1]->AsString()];
-					
+
 				}
 			}
 
@@ -110,7 +112,9 @@ namespace json {
 
 	private:
 		Node root_;
+		//std::vector<unique_ptr<Node>> nodes_stack_;
 		std::vector<Node*> nodes_stack_;
+
 		//	std::vector<Node> nodes_;
 	};
 }
