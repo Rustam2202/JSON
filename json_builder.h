@@ -7,11 +7,16 @@
 using namespace std;
 
 namespace json {
+	class Builder;
+	class DictItemContext;
+
+	
+
 
 	class Builder {
 	public:
 
-		Builder& Key(std::string str) {
+		virtual	Builder& Key(std::string str) {
 
 			if (!nodes_stack_.back()->IsDict()) {
 				throw logic_error("Must be called StartDict() before Key()");
@@ -19,7 +24,6 @@ namespace json {
 			nodes_stack_.emplace_back(make_unique<Node>(str));
 			return *this;
 		}
-
 
 		Builder& Value(Node::Value value) {
 
@@ -72,9 +76,16 @@ namespace json {
 			return *this;
 		}
 
-		Builder& StartDict() {
+		/*Builder& StartDict() {
 			nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
 			return *this;
+		}*/
+
+		DictItemContext StartDict() {
+			Builder b = *this;
+			DictItemContext temp(*this);
+			nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
+			return temp;
 		}
 
 		Builder& StartArray() {
@@ -82,7 +93,7 @@ namespace json {
 			return *this;
 		}
 
-		Builder& EndDict() {
+		virtual	Builder& EndDict() {
 			if (!nodes_stack_.back()->IsDict()) {
 				throw logic_error("Dict can`t closing");
 			}
@@ -117,5 +128,21 @@ namespace json {
 	private:
 		Node root_;
 		std::vector<unique_ptr<Node>> nodes_stack_;
+	};
+
+	class DictItemContext :public Builder {
+	public:
+		DictItemContext(Builder b) :builder_(b) {	}
+
+		Builder& Key(std::string str) {
+
+		}
+
+		Builder& EndDict() {
+
+		}
+
+	private:
+		Builder& builder_;
 	};
 }
