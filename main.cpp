@@ -6,7 +6,7 @@ using namespace std;
 
 int main() {
 
-	//json::Builder{}.StartDict().Build();  // правило 3
+//	json::Builder{}.StartDict().Build();  // правило 3
 	//json::Builder{}.StartDict().Key("1"s).Value(1).Value(1);  // правило 2
 	//json::Builder{}.StartDict().Key("1"s).Key(""s);  // правило 1
 	//json::Builder{}.StartArray().Key("1"s);  // правило 4
