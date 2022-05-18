@@ -12,7 +12,6 @@ namespace json {
 	}
 
 	Builder& Builder::Value(Node::Value value) {
-
 		if (nodes_stack_.empty() || nodes_stack_.back()->IsString() || nodes_stack_.back()->IsArray()) {
 
 			Node temp;
@@ -62,24 +61,23 @@ namespace json {
 		return *this;
 	}
 
-	/*Builder& StartDict() {
-		nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
-		return *this;
-	}*/
-
 	Builder& Builder::StartDict() {
-		Builder& b = *this;
 		nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
-		DictItemContext d(*this);
-
-		//DictItemContext temp(*this);
-		return  d;
+		static DictItemContext dict(*this);
+		return dict;
+	//	return *this;
 	}
 
 	Builder& Builder::StartArray() {
 		nodes_stack_.emplace_back(make_unique<Node>(Array{}));
-		return *this;
+		static ArrayItemContext arr(move(*this));
+		return arr;
 	}
+
+	/*Builder& Builder::StartArray() {
+		nodes_stack_.emplace_back(make_unique<Node>(Array{}));
+		return *this;
+	}*/
 
 	Builder& Builder::EndDict() {
 		if (!nodes_stack_.back()->IsDict()) {
@@ -112,4 +110,14 @@ namespace json {
 
 		return root_;
 	}
+
+	/*Builder& DictItemContext::Key(std::string str)  {
+		builder_.Key(str);
+		return builder_;
+	}
+
+	Builder& DictItemContext::EndDict()  {
+		builder_.EndDict();
+		return builder_;
+	}*/
 }

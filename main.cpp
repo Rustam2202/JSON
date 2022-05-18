@@ -6,22 +6,26 @@ using namespace std;
 
 int main() {
 
-//	json::Builder{}.StartDict().Build();  // правило 3
-	//json::Builder{}.StartDict().Key("1"s).Value(1).Value(1);  // правило 2
-	//json::Builder{}.StartDict().Key("1"s).Key(""s);  // правило 1
-	//json::Builder{}.StartArray().Key("1"s);  // правило 4
-	//json::Builder{}.StartArray().EndDict();  // правило 4
-	//json::Builder{}.StartArray().Value(1).Value(2).EndDict();  // правило 5
+	
+//	json::Builder{}.StartArray().Value("value").Build();
+//	json::Builder{}.StartDict()/*.Key("key")*/.EndDict().Build(); // test
 
-	/*json::Print(
-		json::Document{
-			json::Builder{}
-			.StartDict()
-			.Build()
-		},
-		cout
-	);
-	cout << endl;*/
+	json::Builder{}.StartDict().Build();  // правило 3
+	json::Builder{}.StartDict().Key("1"s).Value(1).Value(1);  // правило 2
+	json::Builder{}.StartDict().Key("1"s).Key(""s);  // правило 1
+	json::Builder{}.StartArray().Key("1"s);  // правило 4
+	json::Builder{}.StartArray().EndDict();  // правило 4
+	json::Builder{}.StartArray().Value(1).Value(2).EndDict();  // правило 5
+
+	//json::Print(
+	//	json::Document{
+	//		json::Builder{}
+	//		.StartDict()
+	//		.Build()
+	//	},
+	//	cout
+	//);
+	//cout << endl;
 
 	/*json::Print(
 		json::Document{
