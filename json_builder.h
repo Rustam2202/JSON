@@ -11,6 +11,8 @@ namespace json {
 	class Builder {
 	public:
 
+	//	virtual ~Builder() = default;
+
 		virtual	Builder& Key(std::string str);
 		virtual	Builder& Value(Node::Value value);
 
@@ -27,14 +29,22 @@ namespace json {
 		std::vector<unique_ptr<Node>> nodes_stack_;
 	};
 
+	class ValueItemContext :public Builder {
+	public:
+		Builder& Value(Node::Value value) override {
+			builder_.Value(value);
+			return builder_;
+		}
+	private:
+		Builder& builder_;
+	};
+
 	class ArrayItemContext :public Builder {
 	public:
 		ArrayItemContext(Builder& builder) :builder_(builder) {}
 		ArrayItemContext(Builder&& builder) :builder_(builder) {}
-		ArrayItemContext& operator=(Builder& builder) = delete;	//	{			builder_ = builder;		}
-		ArrayItemContext& operator=(Builder&& builder) {
-			builder_ = move(builder);
-		}
+		ArrayItemContext& operator=(Builder& builder) = delete;	//	{builder_ = builder;}
+		ArrayItemContext& operator=(Builder&& builder) { builder_ = move(builder); }
 
 		Builder& Value(Node::Value value) override {
 			//builder_.Value(value);
@@ -62,14 +72,15 @@ namespace json {
 		DictItemContext& operator=(Builder&& other) { builder_ = move(other); }
 		~DictItemContext() {}
 
-		Builder& Key(std::string str) {
+		Builder& Key(std::string str) override {
 			builder_.Key(str);
 			//static	DictItemContext temp(move(builder_));
 			//return temp;
 			//builder_ = this->builder_;
 			return *this;
+			//return dynamic_cast<DictItemContext&>(*this);
 		}
-
+				
 		Builder& EndDict() override {
 			builder_.EndDict();
 			static	DictItemContext temp(move(builder_));

@@ -3,13 +3,58 @@
 namespace json {
 
 	Builder& Builder::Key(std::string str) {
-
 		if (!nodes_stack_.back()->IsDict()) {
 			throw logic_error("Must be called StartDict() before Key()");
 		}
 		nodes_stack_.emplace_back(make_unique<Node>(str));
 		return *this;
 	}
+
+	//Builder& Builder::Value(Node::Value value) {
+	//	if (nodes_stack_.empty() || nodes_stack_.back()->IsString() || nodes_stack_.back()->IsArray()) {
+	//		Node temp;
+	//		if (holds_alternative<std::nullptr_t>(value)) {
+	//			temp = std::get<std::nullptr_t>(value);
+	//		}
+	//		else if (holds_alternative<bool>(value)) {
+	//			temp = get<bool>(value);
+	//		}
+	//		else if (holds_alternative<int>(value)) {
+	//			temp = std::get<int>(move(value));
+	//		}
+	//		else if (holds_alternative<double>(value)) {
+	//			temp = std::get<double>(value);
+	//		}
+	//		else if (holds_alternative<std::string>(value)) {
+	//			temp = std::get<string>(value);
+	//		}
+	//		else if (holds_alternative<json::Array>(value)) {
+	//			temp = std::get<Array>(value);
+	//		}
+	//		else if (holds_alternative<json::Dict>(value)) {
+	//			temp = std::get<Dict>(value);
+	//		}
+	//		if (!nodes_stack_.empty() && nodes_stack_.back()->IsArray()) {
+	//			Array& arr = const_cast<Array&>(nodes_stack_.back()->AsArray());
+	//			arr.push_back(move(temp));
+	//		}
+	//		else if (!nodes_stack_.empty() && nodes_stack_.back()->IsString()) {
+	//			unique_ptr<Node> key = move(nodes_stack_.back());
+	//			nodes_stack_.pop_back();
+	//			if (!nodes_stack_.empty() && nodes_stack_.back()->IsDict()) {
+	//				Dict& dict = const_cast<Dict&>(nodes_stack_.back()->AsDict());
+	//				dict[key->AsString()] = temp;
+	//			}
+	//		}
+	//		else {
+	//			nodes_stack_.emplace_back(make_unique<Node>(temp));
+	//		}
+	//	}
+	//	else {
+	//		throw logic_error("");
+	//	}
+	//	return *this;
+	//}
 
 	Builder& Builder::Value(Node::Value value) {
 		if (nodes_stack_.empty() || nodes_stack_.back()->IsString() || nodes_stack_.back()->IsArray()) {
@@ -65,7 +110,7 @@ namespace json {
 		nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
 		static DictItemContext dict(*this);
 		return dict;
-	//	return *this;
+		//return static_cast<DictItemContext&>(*this);
 	}
 
 	Builder& Builder::StartArray() {
