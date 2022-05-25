@@ -7,93 +7,61 @@
 using namespace std;
 
 namespace json {
+	class BaseItemContext;
+	class DictItemContext;
 
 	class Builder {
 	public:
-
-	//	virtual ~Builder() = default;
-
-		virtual	Builder& Key(std::string str);
-		virtual	Builder& Value(Node::Value value);
-
-		virtual	Builder& EndDict();
-		virtual	Builder& EndArray();
-		//Node Build();
-		virtual	Node Build();
-
+		Builder& Key(std::string str);
+		Builder& Value(Node::Value value);
 		Builder& StartDict();
+		//BaseItemContext& StartDict();
+		//DictItemContext& StartDict();
 		Builder& StartArray();
-
+		Builder& EndDict();
+		Builder& EndArray();
+		Node Build();
 	private:
 		Node root_;
 		std::vector<unique_ptr<Node>> nodes_stack_;
 	};
 
-	class ValueItemContext :public Builder {
+	class BaseItemContext {
 	public:
-		Builder& Value(Node::Value value) override {
-			builder_.Value(value);
-			return builder_;
-		}
-	private:
-		Builder& builder_;
-	};
-
-	class ArrayItemContext :public Builder {
-	public:
-		ArrayItemContext(Builder& builder) :builder_(builder) {}
-		ArrayItemContext(Builder&& builder) :builder_(builder) {}
-		ArrayItemContext& operator=(Builder& builder) = delete;	//	{builder_ = builder;}
-		ArrayItemContext& operator=(Builder&& builder) { builder_ = move(builder); }
-
-		Builder& Value(Node::Value value) override {
-			//builder_.Value(value);
-			return builder_;
-		}
-
-		Builder& EndArray() override {
-			return builder_;
-		}
-
-		//Builder& Key(std::string str) = delete;
-
-	private:
-		Builder& builder_;
-	};
-
-	class DictItemContext : public Builder {
-	public:
-
-		//const	DictItemContext(Builder& other) : builder_(other) {}
-		DictItemContext(Builder& other) : builder_(other) {}
-		DictItemContext(Builder&& other) :builder_(other) { builder_ = move(other); }
-		//DictItemContext& operator=(Builder& other) { builder_ = other; }
-		DictItemContext& operator=(Builder&) = delete;
-		DictItemContext& operator=(Builder&& other) { builder_ = move(other); }
-		~DictItemContext() {}
-
-		Builder& Key(std::string str) override {
-			builder_.Key(str);
-			//static	DictItemContext temp(move(builder_));
-			//return temp;
-			//builder_ = this->builder_;
+		BaseItemContext(Builder& builder):builder_(builder){}
+		
+		virtual	BaseItemContext& Key(std::string str) {
 			return *this;
-			//return dynamic_cast<DictItemContext&>(*this);
 		}
-				
-		Builder& EndDict() override {
-			builder_.EndDict();
-			static	DictItemContext temp(move(builder_));
-			return temp;
-			//return builder_;
+		//Builder& Value(Node::Value value);
+		virtual	BaseItemContext& StartDict() {
+			return *this;
 		}
-
-		//Node Build() = delete;
-		Node Build() override {
-			return builder_.Build();
+		//Builder& StartArray();
+		virtual	BaseItemContext& EndDict() {
+			return *this;
 		}
-
+		Builder& EndArray() {}
+		//Node Build();
 	private:
 		Builder& builder_;
 	};
+
+	class DictItemContext : public BaseItemContext {
+	public:
+		DictItemContext(Builder& builder) :builder_(builder) {}
+
+		DictItemContext& Key(std::string str) {
+			builder_.Key(str);
+			return *this;
+		}
+		DictItemContext& EndDict() {
+			return *this;
+		}
+		Builder& EndArray() = delete;
+	private:
+		//BaseItemContext base_;
+		Builder& builder_;
+	};
+
 }
