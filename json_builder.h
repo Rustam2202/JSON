@@ -9,6 +9,7 @@ using namespace std;
 namespace json {
 	class BaseItemContext;
 	class DictItemContext;
+	class KeyContext;
 
 	class Builder {
 	public:
@@ -28,39 +29,45 @@ namespace json {
 
 	class BaseItemContext {
 	public:
-		BaseItemContext(Builder& builder):builder_(builder){}
-		
-		virtual	BaseItemContext& Key(std::string str) {
-			return *this;
-		}
-		//Builder& Value(Node::Value value);
-		virtual	BaseItemContext& StartDict() {
-			return *this;
+		BaseItemContext(Builder& builder) :builder_(builder) {}
+		Builder& Key(std::string str) { return builder_; }
+		Builder& Value(Node::Value value) {}
+		Builder& StartDict() { 
+			
+			return builder_; 
 		}
 		//Builder& StartArray();
-		virtual	BaseItemContext& EndDict() {
-			return *this;
-		}
+		Builder& EndDict() {}
 		Builder& EndArray() {}
 		//Node Build();
-	private:
+	protected:
 		Builder& builder_;
 	};
 
 	class DictItemContext : public BaseItemContext {
 	public:
-		DictItemContext(Builder& builder) :builder_(builder) {}
+		//	DictItemContext(Builder& builder) :builder_(builder) {}
 
-		DictItemContext& Key(std::string str) {
-			builder_.Key(str);
-			return *this;
-		}
-		DictItemContext& EndDict() {
-			return *this;
-		}
+		DictItemContext& Key(std::string str) { return *this; }
+		DictItemContext& Value(Node::Value) = delete;
+		DictItemContext& EndDict() { return *this; }
 		Builder& EndArray() = delete;
 	private:
-		//BaseItemContext base_;
+		//Builder& builder_;
+	};
+
+	class KeyContext : public BaseItemContext {
+	public:
+		BaseItemContext& Key(std::string) { return *this; }
+		BaseItemContext& Value(Node::Value value) {	}
+	private:
+		//Builder& builder_;
+	};
+
+	class ValueContext :public BaseItemContext {
+	public:
+		BaseItemContext& Value(Node::Value);
+	private:
 		Builder& builder_;
 	};
 

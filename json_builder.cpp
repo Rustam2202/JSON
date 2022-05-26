@@ -2,10 +2,17 @@
 
 namespace json {
 
-	Builder& Builder::Key(std::string str) {
+	/*Builder& Builder::Key(std::string str) {
 		if (!nodes_stack_.back()->IsDict()) {
 			throw logic_error("Must be called StartDict() before Key()");
 		}
+		nodes_stack_.emplace_back(make_unique<Node>(str));
+		return *this;
+	}*/
+
+	Builder& Builder::Key(std::string str) {
+		//KeyContext k(*this);
+		//k.Key("");
 		nodes_stack_.emplace_back(make_unique<Node>(str));
 		return *this;
 	}
@@ -65,15 +72,14 @@ namespace json {
 		return *this;
 	}*/
 
-	Builder& Builder::StartDict() {
+	Builder& Builder::StartDict() override {
 		nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
-		DictItemContext dict(*this);
-		dict.StartDict();
-		//return dict;
+		BaseItemContext bc(*this);
+		bc.StartDict();
 		return *this;
 	}
 
-	//DictItemContext& Builder::StartDict() {
+	//BaseItemContext& Builder::StartDict() {
 	//	nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
 	//	DictItemContext dict(*this);
 	//	dict.StartDict();
