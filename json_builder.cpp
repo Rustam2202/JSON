@@ -72,9 +72,9 @@ namespace json {
 		return *this;
 	}*/
 
-	Builder& Builder::StartDict() override {
+	Builder& Builder::StartDict() {
 		nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
-		BaseItemContext bc(*this);
+		DictItemContext bc(*this);
 		bc.StartDict();
 		return *this;
 	}
