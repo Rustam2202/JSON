@@ -13,11 +13,13 @@ namespace json {
 
 	class Builder {
 	public:
-		Builder& Key(std::string str);
-		Builder& Value(Node::Value value);
-		Builder& StartDict();
+		//Builder& StartDict();
 		//BaseItemContext& StartDict();
-		//DictItemContext& StartDict();
+		//Builder& Key(std::string str);
+		KeyContext& Key(std::string str);
+		Builder& Value(Node::Value value);
+		
+		BaseItemContext& StartDict();
 		Builder& StartArray();
 		Builder& EndDict();
 		Builder& EndArray();
@@ -30,11 +32,13 @@ namespace json {
 	class BaseItemContext {
 	public:
 		BaseItemContext(Builder& builder) :builder_(builder) {}
-		Builder& Key(std::string str) {  }
-		Builder& Value(Node::Value value) {}
-		Builder& StartDict() {
+		BaseItemContext& Key(std::string str) { 
+			return *this; 
+		}
+		BaseItemContext& Value(Node::Value value) {}
+		BaseItemContext& StartDict() {
 
-			return builder_;
+			return *this;
 		}
 		//Builder& StartArray();
 		Builder& EndDict() {}
@@ -47,34 +51,35 @@ namespace json {
 	class DictItemContext : public BaseItemContext {
 	public:
 	//	DictItemContext(Builder& builder) :builder_(builder) {}
-		DictItemContext& StartDict() {
-			builder_.StartDict();
-			return *this;
-		}
+		DictItemContext& StartDict() = delete;
 		DictItemContext& Key(std::string str) {
 			builder_.Key(str);
 			return *this;
 		}
 		DictItemContext& Value(Node::Value) = delete;
-		DictItemContext& EndDict() { return *this; }
+		DictItemContext& EndDict() { 
+			builder_.EndDict();
+			return *this; 
+		}
 		Builder& EndArray() = delete;
 	private:
-		//Builder& builder_;
+	//	Builder& builder_;
 	};
 
 	class KeyContext : public BaseItemContext {
 	public:
-		BaseItemContext& Key(std::string) { return *this; }
-		BaseItemContext& Value(Node::Value value) {	}
+		//KeyContext(Builder& builder) :builder_(builder) {}
+		KeyContext& Key(std::string) = delete;
+		KeyContext& Value(Node::Value value) {	}
 	private:
-		//Builder& builder_;
+	//	Builder& builder_;
 	};
 
 	class ValueContext :public BaseItemContext {
 	public:
-		BaseItemContext& Value(Node::Value);
+		ValueContext& Value(Node::Value);
 	private:
-		//Builder& builder_;
+	//	Builder& builder_;
 	};
 
 }
