@@ -17,9 +17,9 @@ namespace json {
 		//BaseItemContext& StartDict();
 		//Builder& Key(std::string str);
 		KeyContext& Key(std::string str);
+		DictItemContext& StartDict();
+
 		Builder& Value(Node::Value value);
-		
-		BaseItemContext& StartDict();
 		Builder& StartArray();
 		Builder& EndDict();
 		Builder& EndArray();
@@ -31,55 +31,58 @@ namespace json {
 
 	class BaseItemContext {
 	public:
-		BaseItemContext(Builder& builder) :builder_(builder) {}
-		BaseItemContext& Key(std::string str) { 
-			return *this; 
-		}
-		BaseItemContext& Value(Node::Value value) {}
-		BaseItemContext& StartDict() {
-
+		//BaseItemContext(Builder& builder) :builder_(builder) {}
+		BaseItemContext& Key(std::string str);
+		BaseItemContext& Value(Node::Value value) {
 			return *this;
 		}
+		BaseItemContext& StartDict();
 		//Builder& StartArray();
-		Builder& EndDict() {}
+		BaseItemContext& EndDict() {
+			return *this;
+		}
 		Builder& EndArray() {}
 		//Node Build();
 	protected:
-		Builder& builder_;
+		//Builder& builder_;
 	};
 
 	class DictItemContext : public BaseItemContext {
 	public:
-	//	DictItemContext(Builder& builder) :builder_(builder) {}
+		DictItemContext(Builder& builder) :builder_(builder) {}
 		DictItemContext& StartDict() = delete;
-		DictItemContext& Key(std::string str) {
-			builder_.Key(str);
+		BaseItemContext& Key(std::string str){
 			return *this;
 		}
-		DictItemContext& Value(Node::Value) = delete;
+		DictItemContext& Value(Node::Value) {
+			return *this;
+		}
 		DictItemContext& EndDict() { 
 			builder_.EndDict();
 			return *this; 
 		}
 		Builder& EndArray() = delete;
 	private:
-	//	Builder& builder_;
+		Builder& builder_;
 	};
 
 	class KeyContext : public BaseItemContext {
 	public:
-		//KeyContext(Builder& builder) :builder_(builder) {}
+		KeyContext(Builder& builder) :builder_(builder) {}
 		KeyContext& Key(std::string) = delete;
-		KeyContext& Value(Node::Value value) {	}
+		Builder& Value(Node::Value value) {
+			builder_.Value(value);
+			return builder_;
+		}
 	private:
-	//	Builder& builder_;
+		Builder& builder_;
 	};
 
 	class ValueContext :public BaseItemContext {
 	public:
 		ValueContext& Value(Node::Value);
 	private:
-	//	Builder& builder_;
+		Builder& builder_;
 	};
 
 }

@@ -21,6 +21,7 @@ namespace json {
 		nodes_stack_.emplace_back(make_unique<Node>(str));
 		KeyContext key(*this);
 		return key;
+		//return *this;
 	}
 
 	Builder& Builder::Value(Node::Value value) {
@@ -73,23 +74,33 @@ namespace json {
 		return *this;
 	}
 
-	/*Builder& Builder::StartDict() {
+	DictItemContext& Builder::StartDict() {
 		nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
-		return *this;
-	}*/
+		DictItemContext b(*this);
+		return b;
+		//BaseItemContext b(*this);
+		////return b;
+		//return *this;
+	}
 
-	//Builder& Builder::StartDict() {
-	//	nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
-	//	DictItemContext bc(*this);
-	//	bc.StartDict();
-	//	return *this;
+	//BaseItemContext& BaseItemContext::Key(std::string str) {
+	//	builder_.Key(str);
+	//	KeyContext key(*this);
+	//	return key;
+	//	//return *this; 
 	//}
 
-	BaseItemContext& Builder::StartDict() {
-		nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
-		BaseItemContext b(*this);
-		return b;
+	BaseItemContext& BaseItemContext::StartDict() {
+		/*DictItemContext dict(*this);
+		return dict;*/
+		return *this;
 	}
+
+	/*BaseItemContext& DictItemContext::Key(std::string str) {
+		builder_.Key(str);
+		KeyContext key(*this);
+		return key;
+	}*/
 
 	Builder& Builder::StartArray() {
 		nodes_stack_.emplace_back(make_unique<Node>(Array{}));
