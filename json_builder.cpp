@@ -18,15 +18,16 @@ namespace json {
 	//}
 
 	KeyContext& Builder::Key(std::string str) {
+		if (!nodes_stack_.back()->IsDict()) {
+			throw logic_error("Must be called StartDict() before Key()");
+		}
 		nodes_stack_.emplace_back(make_unique<Node>(str));
 		KeyContext key(*this);
 		return key;
-		//return *this;
 	}
 
-	Builder& Builder::Value(Node::Value value) {
+	Builder /*ValueContext*/& Builder::Value(Node::Value value) {
 		if (nodes_stack_.empty() || nodes_stack_.back()->IsString() || nodes_stack_.back()->IsArray()) {
-
 			Node temp;
 			if (holds_alternative<std::nullptr_t>(value)) {
 				temp = std::get<std::nullptr_t>(value);
@@ -49,14 +50,12 @@ namespace json {
 			else if (holds_alternative<json::Dict>(value)) {
 				temp = std::get<Dict>(value);
 			}
-
 			if (!nodes_stack_.empty() && nodes_stack_.back()->IsArray()) {
 				Array& arr = const_cast<Array&>(nodes_stack_.back()->AsArray());
 				arr.push_back(move(temp));
 			}
 			else if (!nodes_stack_.empty() && nodes_stack_.back()->IsString()) {
 				unique_ptr<Node> key = move(nodes_stack_.back());
-
 				nodes_stack_.pop_back();
 				if (!nodes_stack_.empty() && nodes_stack_.back()->IsDict()) {
 					Dict& dict = const_cast<Dict&>(nodes_stack_.back()->AsDict());
@@ -78,17 +77,19 @@ namespace json {
 		nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
 		DictItemContext b(*this);
 		return b;
-		//BaseItemContext b(*this);
-		////return b;
+	}
+
+	ArrayItemContext& Builder::StartArray() {
+		nodes_stack_.emplace_back(make_unique<Node>(Array{}));
+		ArrayItemContext arr(*this);
+		return arr;
 		//return *this;
 	}
 
-	//BaseItemContext& BaseItemContext::Key(std::string str) {
-	//	builder_.Key(str);
-	//	KeyContext key(*this);
-	//	return key;
-	//	//return *this; 
-	//}
+	/*BaseItemContext& json::DictItemContext::Key(std::string str) {
+		KeyContext key = builder_.Key(str);
+		return *this;
+	}*/
 
 	BaseItemContext& BaseItemContext::StartDict() {
 		/*DictItemContext dict(*this);
@@ -102,17 +103,22 @@ namespace json {
 		return key;
 	}*/
 
-	Builder& Builder::StartArray() {
-		nodes_stack_.emplace_back(make_unique<Node>(Array{}));
-		return *this;
-	}
-
+	
+	/*Builder& Builder::EndDict() {
+		if (!nodes_stack_.back()->IsDict()) {
+			throw logic_error("Dict can`t closing");
+		}
+		Dict dict = nodes_stack_.back()->AsDict();
+		nodes_stack_.pop_back();
+		return Value(move(dict));
+	}*/
 	Builder& Builder::EndDict() {
 		if (!nodes_stack_.back()->IsDict()) {
 			throw logic_error("Dict can`t closing");
 		}
 		Dict dict = nodes_stack_.back()->AsDict();
 		nodes_stack_.pop_back();
+
 		return Value(move(dict));
 	}
 
