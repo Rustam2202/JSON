@@ -111,9 +111,10 @@ namespace json {
 		//return *this;
 	}
 
-	ValueContext& KeyContext::Value(Node::Value value) {
-		ValueContext val(*this);
-		return val;
+	KeyContext& KeyContext::Value(Node::Value value) {
+		builder_.Value(value);
+		KeyContext enddict(builder_);
+		return enddict;
 	}
 
 	DictItemContext& Builder::StartDict() {
