@@ -6,10 +6,11 @@ using namespace std;
 
 int main() {
 		
-	json::Builder{}.StartArray().Value("value").Value(2);
-//	json::Builder{}.StartDict()/*.Key("key")*/.EndDict().Build(); // test
+	//json::Builder{}.Value(10).Build();
+	//json::Builder{}.StartArray().Value("value").Value(2).Build();
+	json::Builder{}.StartDict().Key("key"s).Value(0)/*.EndDict()*/;
 
-	json::Builder{}.StartDict().Key("1"s).Value(3).EndDict();
+//	json::Builder{}.StartDict().Key("1"s).Value(3).EndDict();
 //	json::Builder{}.StartDict().Key("1"s).Key(""s);  // правило 1
 //	json::Builder{}.StartDict().Key("1"s).Value(1).Value(1);  // правило 2
 	//json::Builder{}.StartDict().Build();  // правило 3
@@ -17,15 +18,15 @@ int main() {
 	//json::Builder{}.StartArray().EndDict();  // правило 4
 	//json::Builder{}.StartArray().Value(1).Value(2).EndDict();  // правило 5
 
-	//json::Print(
-	//	json::Document{
-	//		json::Builder{}
-	//		.StartDict()
-	//		.Build()
-	//	},
-	//	cout
-	//);
-	//cout << endl;
+	json::Print(
+		json::Document{
+			json::Builder{}
+			.StartDict()
+			.Build()
+		},
+		cout
+	);
+	cout << endl;
 
 	/*json::Print(
 		json::Document{

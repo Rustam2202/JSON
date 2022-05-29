@@ -46,7 +46,7 @@ namespace json {
 	protected:
 		//Builder& builder_;
 	};
-	
+
 	class DictItemContext : public BaseItemContext {
 	public:
 		DictItemContext(Builder& builder) :builder_(builder) {}
@@ -60,6 +60,9 @@ namespace json {
 			return *this;
 		}
 		Builder& EndArray() = delete;
+		Node Build() {
+			return builder_.Build();
+		}
 	private:
 		Builder& builder_;
 	};
@@ -67,15 +70,14 @@ namespace json {
 	class ArrayItemContext :public BaseItemContext {
 	public:
 		ArrayItemContext(Builder& builder) :builder_(builder) {}
-		Builder& Value(Node::Value value) {
+		ArrayItemContext& Value(Node::Value value) {
 			builder_.Value(value);
-			return builder_;
+			return *this;
 		}
 		Builder& Key(std::string) = delete;
 		Builder& EndDict() = delete;
-		Builder& EndArray() {
-
-		}
+		Builder& EndArray() {		}
+		Node Build() { return builder_.Build(); }
 	private:
 		Builder& builder_;
 	};
@@ -84,8 +86,11 @@ namespace json {
 	public:
 		KeyContext(Builder& builder) :builder_(builder) {}
 		KeyContext& Key(std::string) = delete;
-		Builder& Value(Node::Value value) {
-			return builder_.Value(value);
+		BaseItemContext& Value(Node::Value value) {
+			builder_.Value(value);
+			DictItemContext dict(builder_);
+			return dict;
+			//return *this;
 		}
 		void EndDict() = delete;
 	private:
@@ -96,6 +101,7 @@ namespace json {
 	public:
 		ValueContext(Builder& builder) :builder_(builder) {}
 		ValueContext& Value(Node::Value) = delete;
+		Node Build() = delete;
 	private:
 		Builder& builder_;
 	};
