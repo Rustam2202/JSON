@@ -2,21 +2,6 @@
 
 namespace json {
 
-	/*Builder& Builder::Key(std::string str) {
-		if (!nodes_stack_.back()->IsDict()) {
-			throw logic_error("Must be called StartDict() before Key()");
-		}
-		nodes_stack_.emplace_back(make_unique<Node>(str));
-		return *this;
-	}*/
-
-	//Builder& Builder::Key(std::string str) {
-	//	//KeyContext k(*this);
-	//	//k.Key("");
-	//	nodes_stack_.emplace_back(make_unique<Node>(str));
-	//	return *this;
-	//}
-
 	KeyContext& Builder::Key(std::string str) {
 		if (!nodes_stack_.back()->IsDict()) {
 			throw logic_error("Must be called StartDict() before Key()");
@@ -24,6 +9,11 @@ namespace json {
 		nodes_stack_.emplace_back(make_unique<Node>(str));
 		KeyContext key(*this);
 		return key;
+	}
+
+	KeyContext& DictItemContext::Key(std::string str) {
+		//BaseItemContext base(*this); // nodes_stack_: trash
+		return builder_.Key(str);	   // nodes_stack_: OK
 	}
 
 	//BaseItemContext& Builder::Value(Node::Value value) {
@@ -72,7 +62,7 @@ namespace json {
 	//	return *this;
 	//}
 
-	Builder& Builder::Value(Node::Value value) {
+	ValueContext& Builder::Value(Node::Value value) {
 		if (nodes_stack_.empty() || nodes_stack_.back()->IsString() || nodes_stack_.back()->IsArray()) {
 			Node temp;
 			if (holds_alternative<std::nullptr_t>(value)) {
@@ -115,7 +105,15 @@ namespace json {
 		else {
 			throw logic_error("");
 		}
-		return *this;
+		ValueContext val(*this);
+		return val;
+
+		//return *this;
+	}
+
+	ValueContext& KeyContext::Value(Node::Value value) {
+		ValueContext val(*this);
+		return val;
 	}
 
 	DictItemContext& Builder::StartDict() {
@@ -136,19 +134,13 @@ namespace json {
 		return *this;
 	}*/
 
-	BaseItemContext& BaseItemContext::StartDict() {
-		/*DictItemContext dict(*this);
-		return dict;*/
-		return *this;
-	}
-
 	/*BaseItemContext& DictItemContext::Key(std::string str) {
 		builder_.Key(str);
 		KeyContext key(*this);
 		return key;
 	}*/
 
-	
+
 	/*Builder& Builder::EndDict() {
 		if (!nodes_stack_.back()->IsDict()) {
 			throw logic_error("Dict can`t closing");
@@ -163,8 +155,8 @@ namespace json {
 		}
 		Dict dict = nodes_stack_.back()->AsDict();
 		nodes_stack_.pop_back();
-
-		return Value(move(dict));
+		return *this;
+		//return Value(move(dict));
 	}
 
 	Builder& Builder::EndArray() {
@@ -173,7 +165,8 @@ namespace json {
 		}
 		Array arr = nodes_stack_.back()->AsArray();
 		nodes_stack_.pop_back();
-		return Value(move(arr));
+		return *this;
+		//return Value(move(arr));
 	}
 
 	Node Builder::Build() {
