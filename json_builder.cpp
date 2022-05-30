@@ -2,16 +2,16 @@
 
 namespace json {
 
-	KeyContext& Builder::Key(std::string str) {
+	KeyContext Builder::Key(std::string str) {
 		if (!nodes_stack_.back()->IsDict()) {
 			throw logic_error("Must be called StartDict() before Key()");
 		}
 		nodes_stack_.emplace_back(make_unique<Node>(str));
 		KeyContext key(*this);
-		return key;
+		return move(key);
 	}
 
-	KeyContext& DictItemContext::Key(std::string str) {
+	KeyContext DictItemContext::Key(std::string str) {
 		//BaseItemContext base(*this); // nodes_stack_: trash
 		return builder_.Key(str);	   // nodes_stack_: OK
 	}
@@ -111,23 +111,26 @@ namespace json {
 		//return *this;
 	}
 
-	DictItemContext& KeyContext::Value(Node::Value value) {
+	DictItemContext KeyContext::Value(Node::Value value) {
 		builder_.Value(value);
-		DictItemContext enddict(builder_);
-		return enddict;
+		DictItemContext enddict(*this);
+		return move(enddict);
 	}
 
-	DictItemContext& Builder::StartDict() {
+	DictItemContext Builder::StartDict() {
 		nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
 		DictItemContext b(*this);
-		return b;
+		return move(b);
 	}
 
-	ArrayItemContext& Builder::StartArray() {
+	ArrayItemContext Builder::StartArray() {
 		nodes_stack_.emplace_back(make_unique<Node>(Array{}));
 		ArrayItemContext arr(*this);
-		return arr;
-		return 
+		return move(arr);
+	}
+
+	ArrayItemContext KeyContext::StartArray() {
+		return builder_.StartArray();
 	}
 
 	/*BaseItemContext& json::DictItemContext::Key(std::string str) {
@@ -166,6 +169,7 @@ namespace json {
 		}
 		Array arr = nodes_stack_.back()->AsArray();
 		nodes_stack_.pop_back();
+		ValueContext val(arr);
 		return *this;
 		//return Value(move(arr));
 	}
