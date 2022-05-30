@@ -6,10 +6,8 @@ using namespace std;
 
 int main() {
 		
-	//json::Builder{}.Value(10).Build();
 //	json::Builder{}.StartArray().Value("value").Value(2).EndArray().Build();
-//	json::Builder{}.StartDict().EndDict().Build();
-	json::Builder{}.StartDict().Key("key"s).Value(9);
+//	json::Builder{}.StartDict().Key("key"s).Value(nullptr).EndDict().Build();
 	json::Builder{}.StartDict().Key("key"s).StartArray().Value("value"s)/*.EndDict()*/;
 
 //	json::Builder{}.StartDict().Key("1"s).Value(3).EndDict();

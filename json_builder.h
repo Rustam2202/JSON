@@ -75,10 +75,11 @@ namespace json {
 	class KeyContext : public BaseItemContext {
 	public:
 		//KeyContext(Builder& builder) :builder_(builder) {}
-		KeyContext& Value(Node::Value value);
+		DictItemContext& Value(Node::Value value);
 		KeyContext& Key(std::string) = delete;
 		ArrayItemContext& StartArray() { 
-			return builder_.StartArray(); }
+			return builder_.StartArray(); 
+		}
 		void EndDict() = delete;
 	private:
 		//Builder& builder_;

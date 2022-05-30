@@ -111,9 +111,9 @@ namespace json {
 		//return *this;
 	}
 
-	KeyContext& KeyContext::Value(Node::Value value) {
+	DictItemContext& KeyContext::Value(Node::Value value) {
 		builder_.Value(value);
-		KeyContext enddict(builder_);
+		DictItemContext enddict(builder_);
 		return enddict;
 	}
 
@@ -127,7 +127,7 @@ namespace json {
 		nodes_stack_.emplace_back(make_unique<Node>(Array{}));
 		ArrayItemContext arr(*this);
 		return arr;
-		//return *this;
+		return 
 	}
 
 	/*BaseItemContext& json::DictItemContext::Key(std::string str) {
