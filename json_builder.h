@@ -35,8 +35,10 @@ namespace json {
 		//BaseItemContext(Builder&& builder) :builder_(builder) {}
 		BaseItemContext(Builder& builder) :builder_(builder) {}
 		BaseItemContext& Key(std::string str) { return *this; }
-		BaseItemContext& Value(Node::Value value) { return *this; }
-		BaseItemContext& StartDict() { return *this; }
+		BaseItemContext& Value(Node::Value value) { 
+			return *this; 
+		}
+		DictItemContext StartDict();
 		BaseItemContext& StartArray() { return *this; }
 		BaseItemContext& EndDict() { return *this; }
 		BaseItemContext& EndArray() { return *this; }
@@ -51,7 +53,7 @@ namespace json {
 		DictItemContext& StartDict() = delete;
 		KeyContext Key(std::string str);
 		DictItemContext& Value(Node::Value) = delete;
-		DictItemContext& EndDict() {
+		BaseItemContext EndDict() {
 			builder_.EndDict();
 			return *this;
 		}

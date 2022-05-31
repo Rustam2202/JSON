@@ -71,6 +71,12 @@ namespace json {
 		return move(enddict);
 	}
 
+	DictItemContext BaseItemContext::StartDict() {
+		builder_.StartDict();
+		DictItemContext dict(*this);
+		return dict;
+	}
+
 	DictItemContext Builder::StartDict() {
 		nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
 		DictItemContext b(*this);
