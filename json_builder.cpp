@@ -11,11 +11,6 @@ namespace json {
 		return move(key);
 	}
 
-	KeyContext DictItemContext::Key(std::string str) {
-		//BaseItemContext base(*this); // nodes_stack_: trash
-		return builder_.Key(str);	   // nodes_stack_: OK
-	}
-
 	ValueContext& Builder::Value(Node::Value value) {
 		if (nodes_stack_.empty() || nodes_stack_.back()->IsString() || nodes_stack_.back()->IsArray()) {
 			Node temp;
@@ -65,18 +60,6 @@ namespace json {
 		//return *this;
 	}
 
-	DictItemContext KeyContext::Value(Node::Value value) {
-		builder_.Value(value);
-		DictItemContext enddict(*this);
-		return move(enddict);
-	}
-
-	DictItemContext BaseItemContext::StartDict() {
-		builder_.StartDict();
-		DictItemContext dict(*this);
-		return dict;
-	}
-
 	DictItemContext Builder::StartDict() {
 		nodes_stack_.emplace_back(make_unique <Node>(Dict{}));
 		DictItemContext b(*this);
@@ -87,21 +70,6 @@ namespace json {
 		nodes_stack_.emplace_back(make_unique<Node>(Array{}));
 		ArrayItemContext arr(*this);
 		return move(arr);
-	}
-
-	ArrayItemContext KeyContext::StartArray() {
-		return builder_.StartArray();
-	}
-
-	Builder& Builder::EndDict() {
-		if (!nodes_stack_.back()->IsDict()) {
-			throw logic_error("Dict can`t closing");
-		}
-		Dict dict = nodes_stack_.back()->AsDict();
-		nodes_stack_.pop_back();
-		Value(move(dict));
-		return *this;
-		//return Value(move(dict));
 	}
 
 	Builder& Builder::EndArray() {
@@ -127,4 +95,38 @@ namespace json {
 		}
 		return root_;
 	}
+
+	KeyContext DictItemContext::Key(std::string str) {
+		//BaseItemContext base(*this); // nodes_stack_: trash
+		return builder_.Key(str);	   // nodes_stack_: OK
+	}
+
+	DictItemContext KeyContext::Value(Node::Value value) {
+		builder_.Value(value);
+		DictItemContext enddict(*this);
+		return move(enddict);
+	}
+
+	DictItemContext BaseItemContext::StartDict() {
+		builder_.StartDict();
+		DictItemContext dict(*this);
+		return dict;
+	}
+
+	ArrayItemContext KeyContext::StartArray() {
+		return builder_.StartArray();
+	}
+
+	Builder& Builder::EndDict() {
+		if (!nodes_stack_.back()->IsDict()) {
+			throw logic_error("Dict can`t closing");
+		}
+		Dict dict = nodes_stack_.back()->AsDict();
+		nodes_stack_.pop_back();
+		Value(move(dict));
+		return *this;
+		//return Value(move(dict));
+	}
+
+	
 }

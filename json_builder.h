@@ -19,9 +19,7 @@ namespace json {
 		ArrayItemContext StartArray();
 		DictItemContext StartDict();
 		KeyContext Key(std::string str);
-
 		ValueContext& Value(Node::Value value);
-
 		Builder& EndDict();
 		Builder& EndArray();
 		Node Build();
@@ -32,16 +30,25 @@ namespace json {
 
 	class BaseItemContext {
 	public:
-		//BaseItemContext(Builder&& builder) :builder_(builder) {}
+		BaseItemContext(Builder&& builder) :builder_(builder) {}
 		BaseItemContext(Builder& builder) :builder_(builder) {}
-		BaseItemContext& Key(std::string str) { return *this; }
-		BaseItemContext& Value(Node::Value value) { 
+		//BaseItemContext(BaseItemContext&) = default;
+		BaseItemContext& Key(std::string str) { 
 			return *this; 
+		}
+		BaseItemContext Value(Node::Value value) {
+			builder_.Value(value);
+			return *this;
+			//return builder_.Value(value);
 		}
 		DictItemContext StartDict();
 		BaseItemContext& StartArray() { return *this; }
-		BaseItemContext& EndDict() { return *this; }
-		BaseItemContext& EndArray() { return *this; }
+		BaseItemContext EndDict() {
+			return builder_.EndDict();
+		}
+		BaseItemContext EndArray() {
+			return	builder_.EndArray();
+		}
 		Node Build() { return	builder_.Build(); }
 	protected:
 		Builder& builder_;
@@ -58,9 +65,10 @@ namespace json {
 			return *this;
 		}
 		Builder& EndArray() = delete;
-		Node Build() {
+		Node Build() = delete;
+		/*Node Build() {
 			return builder_.Build();
-		}
+		}*/
 	private:
 		//Builder& builder_;
 	};
@@ -74,13 +82,13 @@ namespace json {
 
 	class KeyContext : public BaseItemContext {
 	public:
-		//KeyContext(Builder& builder) :builder_(builder) {}
+		//KeyContext(BaseItemContext& base) :base_(base) {}
 		DictItemContext Value(Node::Value value);
 		KeyContext Key(std::string) = delete;
 		ArrayItemContext StartArray();
 		void EndDict() = delete;
 	private:
-		//Builder& builder_;
+		BaseItemContext& base_;
 	};
 
 	class ArrayItemContext :public BaseItemContext {
