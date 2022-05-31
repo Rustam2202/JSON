@@ -34,17 +34,13 @@ namespace json {
 	public:
 		//BaseItemContext(Builder&& builder) :builder_(builder) {}
 		BaseItemContext(Builder& builder) :builder_(builder) {}
-		BaseItemContext& Key(std::string str) {}
-		BaseItemContext& Value(Node::Value value) {	}
-		BaseItemContext& StartDict() {}
-		Builder& StartArray() {}
-		BaseItemContext& EndDict() {
-			return *this;
-		}
-		Builder& EndArray() {}
-		Node Build() {
-			return	builder_.Build();
-		}
+		BaseItemContext& Key(std::string str) { return *this; }
+		BaseItemContext& Value(Node::Value value) { return *this; }
+		BaseItemContext& StartDict() { return *this; }
+		BaseItemContext& StartArray() { return *this; }
+		BaseItemContext& EndDict() { return *this; }
+		BaseItemContext& EndArray() { return *this; }
+		Node Build() { return	builder_.Build(); }
 	protected:
 		Builder& builder_;
 	};
@@ -106,7 +102,7 @@ namespace json {
 	public:
 		//ValueContext(Builder& builder) :builder_(builder) {}
 		ValueContext& Value(Node::Value) = delete;
-		
+
 	private:
 		//Builder& builder_;
 	};
