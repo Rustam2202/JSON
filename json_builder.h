@@ -30,7 +30,6 @@ namespace json {
 
 	class BaseItemContext {
 	public:
-		//BaseItemContext(Builder&& builder) :builder_(builder) {}
 		BaseItemContext(Builder& builder) :builder_(builder) {}
 
 		BaseItemContext& Key(std::string str) {
@@ -54,7 +53,7 @@ namespace json {
 	class DictItemContext : public BaseItemContext {
 	public:
 		DictItemContext(Builder& builder) :BaseItemContext(builder) {}
-	//	DictItemContext(BaseItemContext& base)  {}
+		//	DictItemContext(BaseItemContext& base)  {}
 		DictItemContext& StartDict() = delete;
 		KeyContext Key(std::string str);
 		DictItemContext& Value(Node::Value) = delete;
@@ -64,14 +63,14 @@ namespace json {
 		}
 		Builder& EndArray() = delete;
 		Node Build() = delete;
-		
+
 	private:
 		//Builder& builder_;
 	};
 
 	class EndDictContext :public BaseItemContext {
 	public:
-		EndDictContext(Builder& builder) :BaseItemContext(builder){}
+		EndDictContext(Builder& builder) :BaseItemContext(builder) {}
 		Builder& EndDict() {
 			return builder_.EndDict();
 		}
@@ -83,7 +82,11 @@ namespace json {
 		DictItemContext Value(Node::Value value);
 		KeyContext Key(std::string) = delete;
 		ArrayItemContext StartArray();
-		void EndDict() = delete;
+		EndDictContext EndDict() = delete;
+		void EndArray() = delete;
+		Node Build() = delete;
+		//	void StartDict() = delete;
+
 	private:
 		//	BaseItemContext& base_;
 	};
@@ -92,8 +95,8 @@ namespace json {
 	public:
 		ArrayItemContext(Builder& builder) : BaseItemContext(builder) {}
 		ArrayItemContext& Value(Node::Value value);
-		Builder& Key(std::string) = delete;
-		Builder& EndDict() = delete;
+		void Key(std::string) = delete;
+		void EndDict() = delete;
 		Builder& EndArray() {
 			return builder_.EndArray();
 		}
@@ -106,11 +109,9 @@ namespace json {
 	public:
 		ValueContext(Builder& builder) : BaseItemContext(builder) {}
 		ValueContext& Value(Node::Value) = delete;
-
-	private:
-		//Builder& builder_;
+		void StartArray() = delete;
+		void StartDict() = delete;
+		void EndArray() = delete;
+	//	Node Build() = delete;
 	};
-
-
-
 }

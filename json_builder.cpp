@@ -109,13 +109,13 @@ namespace json {
 
 	DictItemContext KeyContext::Value(Node::Value value) {
 		builder_.Value(value);
-		DictItemContext enddict(/* *this */builder_);
+		DictItemContext enddict(builder_);
 		return enddict;
 	}
 
 	DictItemContext BaseItemContext::StartDict() {
 		builder_.StartDict();
-		DictItemContext dict(/**this*/builder_);
+		DictItemContext dict(builder_);
 		return dict;
 	}
 
