@@ -31,20 +31,12 @@ namespace json {
 	class BaseItemContext {
 	public:
 		BaseItemContext(Builder& builder) :builder_(builder) {}
-
-		BaseItemContext& Key(std::string str) {
-			(void)str; //
-			return *this;
-		}
+		BaseItemContext Key(std::string str);
 		BaseItemContext Value(Node::Value value);
 		DictItemContext StartDict();
-		BaseItemContext& StartArray() { return *this; }
-		BaseItemContext EndDict() {
-			return builder_.EndDict();
-		}
-		BaseItemContext EndArray() {
-			return	builder_.EndArray();
-		}
+		ArrayItemContext StartArray();
+		BaseItemContext EndDict() { return builder_.EndDict(); }
+		BaseItemContext EndArray() { return	builder_.EndArray(); }
 		Node Build() { return	builder_.Build(); }
 	protected:
 		Builder& builder_;
@@ -53,9 +45,9 @@ namespace json {
 	class DictItemContext : public BaseItemContext {
 	public:
 		DictItemContext(Builder& builder) :BaseItemContext(builder) {}
-		//	DictItemContext(BaseItemContext& base)  {}
 		DictItemContext& StartDict() = delete;
 		KeyContext Key(std::string str);
+		void StartArray() = delete;
 		DictItemContext& Value(Node::Value) = delete;
 		BaseItemContext EndDict() {
 			builder_.EndDict();
@@ -63,9 +55,6 @@ namespace json {
 		}
 		Builder& EndArray() = delete;
 		Node Build() = delete;
-
-	private:
-		//Builder& builder_;
 	};
 
 	class EndDictContext :public BaseItemContext {
@@ -85,10 +74,6 @@ namespace json {
 		EndDictContext EndDict() = delete;
 		void EndArray() = delete;
 		Node Build() = delete;
-		//	void StartDict() = delete;
-
-	private:
-		//	BaseItemContext& base_;
 	};
 
 	class ArrayItemContext :public BaseItemContext {
@@ -97,12 +82,7 @@ namespace json {
 		ArrayItemContext& Value(Node::Value value);
 		void Key(std::string) = delete;
 		void EndDict() = delete;
-		Builder& EndArray() {
-			return builder_.EndArray();
-		}
 		Node Build() = delete;
-	private:
-		//Builder& builder_;
 	};
 
 	class ValueContext :public BaseItemContext {
@@ -112,6 +92,5 @@ namespace json {
 		void StartArray() = delete;
 		void StartDict() = delete;
 		void EndArray() = delete;
-	//	Node Build() = delete;
 	};
 }

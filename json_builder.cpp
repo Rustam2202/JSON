@@ -56,8 +56,6 @@ namespace json {
 		}
 		ValueContext val(*this);
 		return val;
-
-		//return *this;
 	}
 
 	DictItemContext Builder::StartDict() {
@@ -72,6 +70,11 @@ namespace json {
 		return arr;
 	}
 
+	ArrayItemContext BaseItemContext::StartArray() {
+		ArrayItemContext arr(builder_);
+		return arr;
+	}
+
 	Builder& Builder::EndArray() {
 		if (!nodes_stack_.back()->IsArray()) {
 			throw logic_error("Array can`t closing");
@@ -80,13 +83,16 @@ namespace json {
 		nodes_stack_.pop_back();
 		Value(move(arr));
 		return *this;
-		//return Value(move(arr));
+	}
+
+	BaseItemContext BaseItemContext::Key(std::string str) {
+		builder_.Key(str);
+		return *this;
 	}
 
 	BaseItemContext BaseItemContext::Value(Node::Value value) {
 		builder_.Value(value);
 		return *this;
-		//return builder_.Value(value);
 	}
 
 	Node Builder::Build() {
@@ -103,8 +109,7 @@ namespace json {
 	}
 
 	KeyContext DictItemContext::Key(std::string str) {
-		//BaseItemContext base(*this); // nodes_stack_: trash
-		return builder_.Key(str);	   // nodes_stack_: OK
+		return builder_.Key(str);
 	}
 
 	DictItemContext KeyContext::Value(Node::Value value) {
@@ -136,8 +141,5 @@ namespace json {
 		nodes_stack_.pop_back();
 		Value(move(dict));
 		return *this;
-		//return Value(move(dict));
 	}
-
-	
 }
